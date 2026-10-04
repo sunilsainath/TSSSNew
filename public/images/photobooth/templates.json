@@ -1,0 +1,123 @@
+[
+  {
+    "slug": "four-photo-collage",
+    "name": "Four Photo Collage",
+    "frame_image": "/images/photobooth/frame-collage-4.png",
+    "preview_image": "/images/photobooth/frame-collage-4-preview.jpg",
+    "width": 1080,
+    "height": 1350,
+    "windows": [
+      {
+        "label": "Photo 1",
+        "shape": "rect",
+        "x": 90,
+        "y": 320,
+        "width": 900,
+        "height": 420,
+        "rotation": 0
+      },
+      {
+        "label": "Photo 2",
+        "shape": "rect",
+        "x": 90,
+        "y": 780,
+        "width": 430,
+        "height": 380,
+        "rotation": 0
+      },
+      {
+        "label": "Photo 3",
+        "shape": "rect",
+        "x": 560,
+        "y": 780,
+        "width": 430,
+        "height": 380,
+        "rotation": 0
+      }
+    ]
+  },
+  {
+    "slug": "photo-strip",
+    "name": "Photo Strip",
+    "frame_image": "/images/photobooth/frame-strip-3.png",
+    "preview_image": "/images/photobooth/frame-strip-3-preview.jpg",
+    "width": 900,
+    "height": 1600,
+    "windows": [
+      {
+        "label": "Photo 1",
+        "shape": "rect",
+        "x": 110,
+        "y": 300,
+        "width": 680,
+        "height": 330,
+        "rotation": 0
+      },
+      {
+        "label": "Photo 2",
+        "shape": "rect",
+        "x": 110,
+        "y": 670,
+        "width": 680,
+        "height": 330,
+        "rotation": 0
+      },
+      {
+        "label": "Photo 3",
+        "shape": "rect",
+        "x": 110,
+        "y": 1040,
+        "width": 680,
+        "height": 330,
+        "rotation": 0
+      }
+    ]
+  },
+  {
+    "slug": "single-circle",
+    "name": "Classic Circle",
+    "frame_image": "/images/photobooth/frame-circle.png",
+    "preview_image": "/images/photobooth/frame-circle-preview.jpg",
+    "width": 1080,
+    "height": 1080,
+    "windows": [
+      {
+        "label": "Photo 1",
+        "shape": "circle",
+        "x": 190,
+        "y": 250,
+        "width": 700,
+        "height": 700,
+        "rotation": 0
+      }
+    ]
+  },
+  {
+    "slug": "twin-collage",
+    "name": "Twin Collage",
+    "frame_image": "/images/photobooth/frame-twin.png",
+    "preview_image": "/images/photobooth/frame-twin-preview.jpg",
+    "width": 1080,
+    "height": 1200,
+    "windows": [
+      {
+        "label": "Photo 1",
+        "shape": "rect",
+        "x": 90,
+        "y": 300,
+        "width": 430,
+        "height": 640,
+        "rotation": 0
+      },
+      {
+        "label": "Photo 2",
+        "shape": "rect",
+        "x": 560,
+        "y": 300,
+        "width": 430,
+        "height": 640,
+        "rotation": 0
+      }
+    ]
+  }
+]

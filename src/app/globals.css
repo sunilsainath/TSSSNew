@@ -1,0 +1,321 @@
+@import "tailwindcss";
+
+@theme {
+  /* Font stacks: webfonts are loaded via the Google Fonts stylesheet in the
+     root layout, with system fallbacks for offline/blocked requests. */
+  --font-body: "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Cormorant Garamond", Georgia, "Times New Roman", "Iowan Old Style", serif;
+
+  /* Brand palette taken from the TSSS emblem: royal blue, gold, crimson. */
+
+  /* Deep brand blue (dark sections, headers) */
+  --color-ink-950: #02101f;
+  --color-ink-900: #052540;
+  --color-ink-800: #073252;
+  --color-ink-700: #0a4068;
+  --color-ink-600: #0d4f80;
+  --color-ink-500: #115f9b;
+
+  /* Primary brand blue (buttons, links, highlights) */
+  --color-brand-50: #eef7ff;
+  --color-brand-100: #d8ecfd;
+  --color-brand-200: #b0d8fb;
+  --color-brand-300: #7dbdf6;
+  --color-brand-400: #479fec;
+  --color-brand-500: #1b84dd;
+  --color-brand-600: #0b6ab5;
+  --color-brand-700: #0b5490;
+  --color-brand-800: #0e4776;
+  --color-brand-900: #103d63;
+
+  /* Gold ring text from the emblem */
+  --color-gold-50: #fffaeb;
+  --color-gold-100: #fdf1c6;
+  --color-gold-200: #fae28c;
+  --color-gold-300: #f6cf4f;
+  --color-gold-400: #f2c230;
+  --color-gold-500: #dda71c;
+  --color-gold-600: #b2801a;
+  --color-gold-700: #8a600f;
+
+  /* Crimson accent (TSSS lettering, tridulam) */
+  --color-flag-50: #fef2f2;
+  --color-flag-100: #fee2e2;
+  --color-flag-200: #fecaca;
+  --color-flag-300: #fca5a5;
+  --color-flag-400: #f87171;
+  --color-flag-500: #dc2626;
+  --color-flag-600: #d8232a;
+  --color-flag-700: #b21a20;
+  --color-flag-800: #8f181d;
+
+  --font-sans: var(--font-body);
+  --font-serif: var(--font-display);
+
+  --radius-4xl: 2rem;
+  --radius-5xl: 2.5rem;
+
+  --animate-float: float 9s ease-in-out infinite;
+  --animate-float-slow: float 14s ease-in-out infinite;
+  --animate-glow: glow 6s ease-in-out infinite;
+  --animate-shimmer: shimmer 2.5s linear infinite;
+  --animate-fade-up: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-marquee: marquee 32s linear infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -18px, 0);
+  }
+}
+
+@keyframes glow {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+    --surface: 255 255 255;
+    --surface-muted: 244 248 253;
+    --border-soft: 219 231 244;
+  }
+
+  * {
+    border-color: rgb(var(--border-soft));
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: #ffffff;
+    color: #0f172a;
+    font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display), Georgia, serif;
+    letter-spacing: -0.015em;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-gold-500);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: var(--color-gold-200);
+    color: #1a1205;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  .container-page {
+    width: 100%;
+    margin-inline: auto;
+    max-width: 80rem;
+    padding-inline: 1.25rem;
+  }
+
+  @media (min-width: 1024px) {
+    .container-page {
+      padding-inline: 2rem;
+    }
+  }
+
+  .glass {
+    background: color-mix(in oklab, #ffffff 8%, transparent);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    border: 1px solid color-mix(in oklab, #ffffff 16%, transparent);
+  }
+
+  .glass-light {
+    background: color-mix(in oklab, #ffffff 72%, transparent);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgb(var(--border-soft));
+  }
+
+  .text-gradient-gold {
+    background: linear-gradient(120deg, #fdf1c6 0%, #f2c230 45%, #dda71c 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .text-gradient-brand {
+    background: linear-gradient(120deg, #479fec 0%, #0b6ab5 55%, #073252 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .text-gradient-ink {
+    background: linear-gradient(120deg, #0f172a 0%, #334155 60%, #0f172a 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .surface-card {
+    background: #ffffff;
+    border: 1px solid rgb(var(--border-soft));
+    border-radius: var(--radius-4xl);
+    box-shadow:
+      0 1px 2px rgb(15 23 42 / 0.04),
+      0 12px 32px -18px rgb(5 37 64 / 0.28);
+  }
+
+  .surface-card-hover {
+    transition:
+      transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.35s ease,
+      border-color 0.35s ease;
+  }
+
+  .surface-card-hover:hover {
+    transform: translateY(-4px);
+    border-color: color-mix(in oklab, var(--color-brand-400) 45%, transparent);
+    box-shadow:
+      0 2px 4px rgb(15 23 42 / 0.05),
+      0 26px 50px -26px rgb(11 106 181 / 0.35);
+  }
+
+  .aurora {
+    position: absolute;
+    inset: -20% -10% auto -10%;
+    height: 120%;
+    pointer-events: none;
+    background:
+      radial-gradient(45% 45% at 18% 22%, rgb(27 132 221 / 0.28), transparent 60%),
+      radial-gradient(40% 40% at 82% 18%, rgb(242 194 48 / 0.16), transparent 60%),
+      radial-gradient(50% 50% at 50% 88%, rgb(216 35 42 / 0.14), transparent 65%);
+    filter: blur(28px);
+  }
+
+  .divider-gold {
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in oklab, var(--color-gold-400) 45%, transparent),
+      transparent
+    );
+  }
+
+  /** Soft brand-blue halo used behind the emblem and hero artwork. */
+  .brand-halo {
+    background: radial-gradient(
+      circle at 50% 50%,
+      rgb(27 132 221 / 0.35) 0%,
+      rgb(11 106 181 / 0.16) 45%,
+      transparent 70%
+    );
+  }
+
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      rgb(226 232 240 / 0.6) 25%,
+      rgb(241 245 249 / 0.9) 37%,
+      rgb(226 232 240 / 0.6) 63%
+    );
+    background-size: 400% 100%;
+    animation: var(--animate-shimmer);
+  }
+
+  .admin-table th {
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgb(100 116 139);
+    font-weight: 600;
+    text-align: left;
+    padding: 0.75rem 1rem;
+    background: rgb(248 250 252);
+    border-bottom: 1px solid rgb(var(--border-soft));
+    white-space: nowrap;
+  }
+
+  .admin-table td {
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid rgb(var(--border-soft));
+    font-size: 0.9rem;
+    vertical-align: middle;
+  }
+
+  .admin-table tbody tr:hover {
+    background: rgb(250 250 252);
+  }
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
