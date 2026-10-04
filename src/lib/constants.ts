@@ -63,6 +63,20 @@ export const PLACEHOLDER_EVENT_IMAGE = "/images/events/devotional-1.jpg";
 export const PLACEHOLDER_BLOG_IMAGE = "/images/blogs/blog-1.jpg";
 export const PLACEHOLDER_MEDIA_IMAGE = "/images/media/media-1.jpg";
 
+/**
+ * The public contact form posts straight to FormSubmit, which emails the
+ * enquiry straight to the trust inbox - no server action or database row.
+ * Override with NEXT_PUBLIC_CONTACT_FORM_EMAIL when the inbox changes.
+ */
+export const CONTACT_FORM_EMAIL =
+  process.env.NEXT_PUBLIC_CONTACT_FORM_EMAIL ?? "srinivasreddyvootkuri@srinivasulasevasamstha.com";
+
+/** FormSubmit's AJAX endpoint returns JSON so the form can stay on the page. */
+export const CONTACT_FORM_ENDPOINT = `https://formsubmit.co/ajax/${CONTACT_FORM_EMAIL}`;
+
+/** Where FormSubmit sends the visitor after a successful send. */
+export const CONTACT_FORM_REDIRECT = `${SITE_URL}/contact?sent=1`;
+
 export const FALLBACK_SETTINGS: SiteSettingsRow = {
   id: "fallback",
   organization_name: SITE_NAME,

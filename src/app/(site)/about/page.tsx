@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { ButtonLink } from "@/components/ui/button";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { BrandEmblem } from "@/components/brand/brand-emblem";
+import { ContactForm } from "@/components/forms/contact-form";
 import { getAllDistricts, getPageContent, getSiteBranding, getSiteSettings } from "@/lib/data/public";
 
 export const revalidate = 300;
@@ -236,42 +237,51 @@ export default async function AboutPage() {
               <ButtonLink href="/blood-help" className="mt-6">
                 Request blood help
               </ButtonLink>
+
+              <dl className="mt-8 grid gap-5 sm:grid-cols-2">
+                {[
+                  ["Email", settings.contact_email, "mailto:"],
+                  ["Phone", settings.contact_phone, "tel:"],
+                  ["WhatsApp", settings.whatsapp_number, "wa:"],
+                  ["Address", settings.contact_address, null],
+                ]
+                  .filter(([, value]) => Boolean(value))
+                  .map(([label, value, prefix]) => (
+                    <div key={label as string}>
+                      <dt className="text-xs font-semibold tracking-[0.12em] text-slate-500 uppercase">
+                        {label}
+                      </dt>
+                      <dd className="mt-1 text-sm font-medium text-ink-900">
+                        {prefix ? (
+                          <a
+                            href={`${prefix}${String(value).replace(/\s/g, prefix === "tel:" ? "" : "")}`}
+                            className="hover:text-gold-700"
+                          >
+                            {value}
+                          </a>
+                        ) : (
+                          value
+                        )}
+                      </dd>
+                    </div>
+                  ))}
+
+                {!settings.contact_email && !settings.contact_phone && !settings.contact_address ? (
+                  <p className="text-sm text-slate-500 sm:col-span-2">
+                    Contact details have not been published yet. Administrators can add them in Admin →
+                    Settings.
+                  </p>
+                ) : null}
+              </dl>
             </div>
 
-            <dl className="grid gap-5 sm:grid-cols-2">
-              {[
-                ["Email", settings.contact_email, "mailto:"],
-                ["Phone", settings.contact_phone, "tel:"],
-                ["WhatsApp", settings.whatsapp_number, "wa:"],
-                ["Address", settings.contact_address, null],
-              ]
-                .filter(([, value]) => Boolean(value))
-                .map(([label, value, prefix]) => (
-                  <div key={label as string}>
-                    <dt className="text-xs font-semibold tracking-[0.12em] text-slate-500 uppercase">
-                      {label}
-                    </dt>
-                    <dd className="mt-1 text-sm font-medium text-ink-900">
-                      {prefix ? (
-                        <a
-                          href={`${prefix}${String(value).replace(/\s/g, prefix === "tel:" ? "" : "")}`}
-                          className="hover:text-gold-700"
-                        >
-                          {value}
-                        </a>
-                      ) : (
-                        value
-                      )}
-                    </dd>
-                  </div>
-                ))}
-
-              {!settings.contact_email && !settings.contact_phone && !settings.contact_address ? (
-                <p className="text-sm text-slate-500 sm:col-span-2">
-                  Contact details have not been published yet. Administrators can add them in Admin → Settings.
-                </p>
-              ) : null}
-            </dl>
+            <div>
+              <h3 className="font-display text-lg font-semibold text-ink-900">Send us a message</h3>
+              <p className="mt-2 mb-5 text-sm leading-relaxed text-slate-600">
+                Fill this in and the message goes straight to the trust inbox.
+              </p>
+              <ContactForm />
+            </div>
           </div>
         </div>
       </section>

@@ -142,7 +142,7 @@ and every admin page/action re-verifies the session server-side.
 
 ## 5. Public features
 
-- **Home** — hero with Venkateshwara Namalu + logo, about, upcoming events, live impact
+- **Home** — hero with the trust emblem, about, upcoming events, live impact
   statistics, initiatives, photo booth entry, latest blogs, media, blood help CTA,
   registration CTA.
 - **Events** — admin-managed categories, event pages with gallery, YouTube embed,
@@ -162,6 +162,24 @@ and every admin page/action re-verifies the session server-side.
 
 Routing order: area administrator → district administrator → central admin
 (the request is flagged *Unassigned* and the requester is told).
+
+### Contact form
+
+The "Get in touch" section on `/about#contact` posts to
+[FormSubmit](https://formsubmit.co) and emails the enquiry to
+`NEXT_PUBLIC_CONTACT_FORM_EMAIL` (default `srinivasreddyvootkuri@srinivasulasevasamstha.com`).
+No account, API key or server code is involved, and nothing is written to the database.
+
+Two things to know:
+
+- **The first message must be confirmed.** FormSubmit emails an activation link to
+  the destination inbox on the first ever submission. Until somebody clicks it,
+  every later message is silently discarded. Check that inbox once after deploying.
+- The inbox is the only place enquiries land. They are not visible in the admin
+  panel, so forward them where you want them filed.
+
+The form degrades to a normal HTML `POST` if JavaScript is unavailable, so it still
+delivers without the client-side fetch.
 
 ---
 
