@@ -56,7 +56,7 @@ function buildValidator(_entity: EntityKey, fields: FieldSpec[]) {
   return z.object(shape);
 }
 
-async function writeAudit(
+export async function writeAudit(
   action: string,
   entity: string,
   entityId: string | null,
@@ -556,6 +556,30 @@ export async function adminQuickAction(formData: FormData): Promise<void> {
     case "blood_help_admin:toggle-active":
       updates.is_active = formData.get("value") === "true";
       auditAction = "toggle_active";
+      break;
+    case "donor:toggle-active":
+      updates.is_active = formData.get("value") === "true";
+      auditAction = "toggle_active";
+      break;
+    case "donor:set-willing":
+      updates.is_willing = true;
+      auditAction = "set_willing";
+      break;
+    case "donor:set-unwilling":
+      updates.is_willing = false;
+      auditAction = "set_unwilling";
+      break;
+    case "donation_request:set-pending":
+      updates.status = "pending";
+      break;
+    case "donation_request:set-in-progress":
+      updates.status = "in_progress";
+      break;
+    case "donation_request:set-fulfilled":
+      updates.status = "fulfilled";
+      break;
+    case "donation_request:set-cancelled":
+      updates.status = "cancelled";
       break;
     case "photo_booth_template:toggle-active":
       updates.is_active = formData.get("value") === "true";

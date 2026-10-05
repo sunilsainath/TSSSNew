@@ -8,19 +8,66 @@ export const dynamic = "force-dynamic";
 export default async function ExportRegistrationsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ search?: string; status?: string; perPage?: string }>;
+  searchParams: Promise<{
+    search?: string;
+    status?: string;
+    gender?: string;
+    bloodGroup?: string;
+    state?: string;
+    country?: string;
+    donated?: string;
+    dobFrom?: string;
+    dobTo?: string;
+    registeredFrom?: string;
+    registeredTo?: string;
+    perPage?: string;
+  }>;
 }) {
   const params = await searchParams;
   const query = parseMemberQuery(params);
   const { rows, error } = await fetchAllMembers(query);
 
+  const activeFilters = [
+    query.search ? `for "${query.search}"` : "",
+    query.status !== "all" ? `with status ${query.status}` : "",
+    query.gender ? `gender ${query.gender}` : "",
+    query.bloodGroup ? `blood group ${query.bloodGroup}` : "",
+    query.state ? `state ${query.state}` : "",
+    query.country ? `country ${query.country}` : "",
+    query.donated !== "all" ? (query.donated === "yes" ? "who donated blood" : "who never donated") : "",
+  ].filter(Boolean);
+
+  const downloadParams = new URLSearchParams();
+  for (const [key, value] of Object.entries({
+    search: query.search,
+    status: query.status,
+    gender: query.gender,
+    bloodGroup: query.bloodGroup,
+    state: query.state,
+    country: query.country,
+    donated: query.donated,
+    dobFrom: query.dobFrom,
+    dobTo: query.dobTo,
+    registeredFrom: query.registeredFrom,
+    registeredTo: query.registeredTo,
+  })) {
+    if (value) downloadParams.set(key, value);
+  }
+
   const csv = toCsv(
     rows.map((row) => ({
       registration_number: row.registration_number,
       full_name: row.full_name,
+      father_name: row.father_name ?? "",
       date_of_birth: row.date_of_birth,
+      gender: row.gender ?? "",
+      blood_group: row.blood_group ?? "",
       village: row.village ?? "",
+      state_code: row.state_code ?? "",
+      country_code: row.country_code ?? "",
       mobile_number: row.mobile_number,
+      email: row.email ?? "",
+      designation: row.designation ?? "",
       status: row.status,
       registered_at: formatDateTime(row.created_at as string),
     })),
@@ -43,11 +90,10 @@ export default async function ExportRegistrationsPage({
           <>
             <p className="text-sm text-slate-600">
               {rows.length.toLocaleString("en-IN")} record(s) ready to export
-              {query.search ? ` for "${query.search}"` : ""}
-              {query.status !== "all" ? ` with status ${query.status}` : ""}.
+              {activeFilters.length > 0 ? ` ${activeFilters.join(", ")}` : ""}.
             </p>
             <a
-              href={`/api/admin/export/registrations?search=${encodeURIComponent(query.search)}&status=${query.status}`}
+              href={`/api/admin/export/registrations?${downloadParams.toString()}`}
               className="mt-5 inline-flex h-11 items-center justify-center rounded-full bg-ink-900 px-6 text-sm font-semibold text-white hover:bg-ink-800"
               download
             >

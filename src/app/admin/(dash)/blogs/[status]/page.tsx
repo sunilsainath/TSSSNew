@@ -43,6 +43,14 @@ export default async function BlogQueuePage({
       <AdminPageHeader
         title={`Blogs · ${status}`}
         description="Only approved blogs appear on the public website. Review each submission before approving."
+        action={
+          <Link
+            href="/admin/blogs/new"
+            className="inline-flex h-11 items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-brand-600 to-brand-500 px-5 text-sm font-semibold text-white transition-transform hover:scale-[1.02]"
+          >
+            + New post
+          </Link>
+        }
       />
 
       <nav aria-label="Blog queues" className="mb-5 flex flex-wrap gap-2">

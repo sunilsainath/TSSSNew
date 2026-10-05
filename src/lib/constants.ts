@@ -26,7 +26,10 @@ export const PRIMARY_NAV: NavItem[] = [
 ];
 
 /** Secondary, high-engagement links shown next to the primary navigation. */
-export const FEATURE_NAV: NavItem[] = [{ href: "/photo-booth", label: "Photo Booth" }];
+export const FEATURE_NAV: NavItem[] = [
+  { href: "/photo-booth", label: "Photo Booth" },
+  { href: "/blood-donate", label: "Donate Blood" },
+];
 
 /** Registration is called out separately as the main call to action. */
 export const REGISTER_NAV: NavItem = { href: "/register", label: "Register" };

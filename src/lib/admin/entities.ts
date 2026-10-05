@@ -76,6 +76,9 @@ export type EntityKey =
   | "district"
   | "area"
   | "blood_help_admin"
+  | "donor"
+  | "donation_request"
+  | "donation_camp"
   | "site_settings"
   | "user"
   | "photo_booth_template"
@@ -285,6 +288,9 @@ export const ENTITY_SPECS: Record<EntityKey, EntitySpec> = {
     plural: "blogs",
     auditEntity: "blogs",
     fields: [
+      { name: "author_name", label: "Author name", type: "text", required: true, hint: "Shown on the article" },
+      { name: "author_email", label: "Author email", type: "email", required: true, hint: "Kept private, never shown" },
+      { name: "author_mobile", label: "Author mobile", type: "tel" },
       { name: "title", label: "Title", type: "text", required: true, colSpan: 2 },
       { name: "slug", label: "Slug", type: "text", hint: "Auto-generated if left blank" },
       { name: "category", label: "Category", type: "text", required: true },
@@ -448,6 +454,143 @@ export const ENTITY_SPECS: Record<EntityKey, EntitySpec> = {
       { name: "district_id", label: "District", type: "select", options: [] },
       { name: "area_id", label: "Area (optional)", type: "select", options: [], hint: "Leave empty to cover the whole district" },
       { name: "is_active", label: "Active", type: "checkbox" },
+    ],
+  },
+
+  donor: {
+    key: "donor",
+    table: "donors",
+    minimumRole: "blood_help_manager",
+    singular: "donor",
+    plural: "donors",
+    auditEntity: "donors",
+    fields: [
+      { name: "full_name", label: "Full name", type: "text", required: true },
+      { name: "father_name", label: "Father's name", type: "text" },
+      {
+        name: "blood_group",
+        label: "Blood group",
+        type: "select",
+        required: true,
+        options: [
+          { value: "O+", label: "O+" },
+          { value: "O-", label: "O-" },
+          { value: "A+", label: "A+" },
+          { value: "A-", label: "A-" },
+          { value: "B+", label: "B+" },
+          { value: "B-", label: "B-" },
+          { value: "AB+", label: "AB+" },
+          { value: "AB-", label: "AB-" },
+        ],
+      },
+      { name: "mobile_number", label: "Mobile number", type: "tel", required: true },
+      { name: "phone_country_code", label: "Dialling code", type: "text", placeholder: "e.g. 91" },
+      { name: "email", label: "Email", type: "email" },
+      { name: "date_of_birth", label: "Date of birth", type: "date" },
+      {
+        name: "gender",
+        label: "Gender",
+        type: "select",
+        placeholder: "Not recorded",
+        options: [
+          { value: "", label: "Not recorded" },
+          { value: "male", label: "Male" },
+          { value: "female", label: "Female" },
+          { value: "other", label: "Other" },
+          { value: "prefer_not_to_say", label: "Prefer not to say" },
+        ],
+      },
+      { name: "country_code", label: "Country code", type: "text", placeholder: "e.g. IN" },
+      { name: "state_code", label: "State", type: "text", placeholder: "e.g. TS" },
+      { name: "city", label: "City / District", type: "text" },
+      { name: "area", label: "Area / Locality", type: "text" },
+      { name: "address", label: "Address", type: "text", colSpan: 2 },
+      { name: "last_donation_date", label: "Last donation date", type: "date" },
+      { name: "is_willing", label: "Willing to donate", type: "checkbox" },
+      { name: "availability", label: "Availability", type: "text", hint: "e.g. weekends, evenings" },
+      {
+        name: "preferred_contact",
+        label: "Preferred contact",
+        type: "select",
+        options: [
+          { value: "phone", label: "Phone call" },
+          { value: "whatsapp", label: "WhatsApp message" },
+          { value: "email", label: "Email" },
+        ],
+      },
+      { name: "is_active", label: "Active", type: "checkbox" },
+    ],
+  },
+
+  donation_request: {
+    key: "donation_request",
+    table: "donation_requests",
+    minimumRole: "blood_help_manager",
+    singular: "donation request",
+    plural: "donation requests",
+    auditEntity: "donation_requests",
+    fields: [
+      {
+        name: "status",
+        label: "Status",
+        type: "select",
+        required: true,
+        options: [
+          { value: "pending", label: "Pending" },
+          { value: "in_progress", label: "In Progress" },
+          { value: "fulfilled", label: "Fulfilled" },
+          { value: "cancelled", label: "Cancelled" },
+        ],
+      },
+      { name: "patient_name", label: "Patient name", type: "text", required: true },
+      {
+        name: "blood_group",
+        label: "Blood group required",
+        type: "select",
+        required: true,
+        options: [
+          { value: "O+", label: "O+" },
+          { value: "O-", label: "O-" },
+          { value: "A+", label: "A+" },
+          { value: "A-", label: "A-" },
+          { value: "B+", label: "B+" },
+          { value: "B-", label: "B-" },
+          { value: "AB+", label: "AB+" },
+          { value: "AB-", label: "AB-" },
+        ],
+      },
+      { name: "units_required", label: "Units required", type: "number", required: true, min: 1, max: 50 },
+      { name: "fulfilled_units", label: "Units fulfilled", type: "number", min: 0 },
+      { name: "hospital_name", label: "Hospital name", type: "text", required: true },
+      { name: "hospital_location", label: "Hospital location", type: "text" },
+      { name: "area", label: "Area / Locality", type: "text" },
+      { name: "city", label: "City / District", type: "text" },
+      { name: "state_code", label: "State", type: "text", placeholder: "e.g. TS" },
+      { name: "contact_person", label: "Contact person", type: "text" },
+      { name: "contact_number", label: "Contact number", type: "tel", required: true },
+      { name: "contact_country_code", label: "Dialling code", type: "text", placeholder: "e.g. 91" },
+      { name: "request_date", label: "Request date", type: "date" },
+      { name: "required_date", label: "Required by", type: "date" },
+      { name: "notes", label: "Notes", type: "textarea", rows: 3, colSpan: 2 },
+    ],
+  },
+
+  donation_camp: {
+    key: "donation_camp",
+    table: "donation_camps",
+    minimumRole: "content_manager",
+    singular: "donation camp",
+    plural: "donation camps",
+    auditEntity: "donation_camps",
+    fields: [
+      { name: "name", label: "Camp name", type: "text", required: true, colSpan: 2 },
+      { name: "camp_date", label: "Camp date", type: "date", required: true },
+      { name: "organizing_organization", label: "Organizing organization", type: "text" },
+      { name: "location", label: "Location", type: "text" },
+      { name: "area", label: "Area / Locality", type: "text" },
+      { name: "city", label: "City / District", type: "text" },
+      { name: "state_code", label: "State", type: "text", placeholder: "e.g. TS" },
+      { name: "notes", label: "Notes", type: "textarea", rows: 3, colSpan: 2 },
     ],
   },
 

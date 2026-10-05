@@ -5,6 +5,7 @@ import { AdminQuickButton } from "@/components/admin/admin-actions-buttons";
 import { MemberForm } from "@/components/admin/member-form";
 import { MEMBER_SORTS, parseMemberQuery, queryMembers } from "@/lib/data/members";
 import { formatDate, formatDateTime } from "@/lib/utils/format";
+import { COUNTRIES, INDIAN_STATES } from "@/lib/lookups";
 import type { MemberRow } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -16,6 +17,15 @@ export default async function RegistrationsPage({
     page?: string;
     search?: string;
     status?: string;
+    gender?: string;
+    bloodGroup?: string;
+    state?: string;
+    country?: string;
+    donated?: string;
+    dobFrom?: string;
+    dobTo?: string;
+    registeredFrom?: string;
+    registeredTo?: string;
     sort?: string;
     direction?: string;
     view?: string;
@@ -33,6 +43,15 @@ export default async function RegistrationsPage({
       page: query.page,
       search: query.search,
       status: query.status,
+      gender: query.gender,
+      bloodGroup: query.bloodGroup,
+      state: query.state,
+      country: query.country,
+      donated: query.donated,
+      dobFrom: query.dobFrom,
+      dobTo: query.dobTo,
+      registeredFrom: query.registeredFrom,
+      registeredTo: query.registeredTo,
       sort: query.sort,
       direction: query.direction,
       ...overrides,
@@ -42,6 +61,7 @@ export default async function RegistrationsPage({
       if (value === "" || value === undefined) continue;
       if (key === "page" && Number(value) <= 1) continue;
       if (key === "status" && value === "all") continue;
+      if (key === "donated" && value === "all") continue;
       if (key === "direction" && value === "desc") continue;
       if (key === "sort" && value === "created_at") continue;
       if (key === "search" && value === "") continue;
@@ -65,24 +85,54 @@ export default async function RegistrationsPage({
       page: 1,
     });
 
+  // The export and bulk-card pages read the same filters, so what is listed is
+  // what is downloaded.
+  const filterParams = (() => {
+    const params = new URLSearchParams();
+    for (const [key, value] of Object.entries({
+      search: query.search,
+      status: query.status,
+      gender: query.gender,
+      bloodGroup: query.bloodGroup,
+      state: query.state,
+      country: query.country,
+      donated: query.donated,
+      dobFrom: query.dobFrom,
+      dobTo: query.dobTo,
+      registeredFrom: query.registeredFrom,
+      registeredTo: query.registeredTo,
+    })) {
+      if (value) params.set(key, value);
+    }
+    return params.toString();
+  })();
+
   return (
     <>
       <AdminPageHeader
         title="Registered members"
         description={`${total.toLocaleString("en-IN")} registration${total === 1 ? "" : "s"} on record. This list is private and only visible to authorised administrators.`}
         action={
-          <Link
-            href={buildHref({})}
-            className="inline-flex h-11 items-center justify-center rounded-full border border-brand-200 px-5 text-sm font-semibold text-ink-700 hover:border-gold-400"
-          >
-            Export CSV
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href={filterParams ? `/admin/registrations/id-cards?${filterParams}` : "/admin/registrations/id-cards"}
+              className="inline-flex h-11 items-center justify-center rounded-full border border-brand-200 px-5 text-sm font-semibold text-ink-700 hover:border-gold-400"
+            >
+              Bulk ID cards
+            </Link>
+            <Link
+              href={filterParams ? `/admin/registrations/export?${filterParams}` : "/admin/registrations/export"}
+              className="inline-flex h-11 items-center justify-center rounded-full border border-brand-200 px-5 text-sm font-semibold text-ink-700 hover:border-gold-400"
+            >
+              Export CSV
+            </Link>
+          </div>
         }
       />
 
       <form action="/admin/registrations" method="get" className="surface-card mb-5 p-4">
         <div className="flex flex-wrap items-end gap-3">
-          <div className="min-w-56 flex-1">
+          <div className="min-w-56 flex-1 basis-64">
             <label htmlFor="member-search" className="mb-1.5 block text-xs font-semibold text-slate-600">
               Search
             </label>
@@ -90,7 +140,7 @@ export default async function RegistrationsPage({
               id="member-search"
               name="search"
               defaultValue={query.search}
-              placeholder="Registration number, name, village or mobile…"
+              placeholder="Number, name, father's name, village, mobile or email…"
               className="h-10 w-full rounded-full border border-brand-200 bg-white px-4 text-sm focus:border-gold-400 focus:ring-2 focus:ring-gold-200 focus:outline-none"
             />
           </div>
@@ -108,6 +158,140 @@ export default async function RegistrationsPage({
               <option value="active">Active</option>
               <option value="disabled">Disabled</option>
             </select>
+          </div>
+          <div>
+            <label htmlFor="member-gender" className="mb-1.5 block text-xs font-semibold text-slate-600">
+              Gender
+            </label>
+            <select
+              id="member-gender"
+              name="gender"
+              defaultValue={query.gender}
+              className="h-10 rounded-full border border-brand-200 bg-white px-4 text-sm focus:border-gold-400 focus:outline-none"
+            >
+              <option value="">All</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+              <option value="prefer_not_to_say">Prefer not to say</option>
+            </select>
+          </div>
+          <div>
+            <label htmlFor="member-blood" className="mb-1.5 block text-xs font-semibold text-slate-600">
+              Blood group
+            </label>
+            <select
+              id="member-blood"
+              name="bloodGroup"
+              defaultValue={query.bloodGroup}
+              className="h-10 rounded-full border border-brand-200 bg-white px-4 text-sm focus:border-gold-400 focus:outline-none"
+            >
+              <option value="">All</option>
+              {["O+", "O-", "A+", "A-", "B+", "B-", "AB+", "AB-", "UNKNOWN"].map((group) => (
+                <option key={group} value={group}>
+                  {group === "UNKNOWN" ? "I Don't Know" : group}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="member-state" className="mb-1.5 block text-xs font-semibold text-slate-600">
+              State
+            </label>
+            <select
+              id="member-state"
+              name="state"
+              defaultValue={query.state}
+              className="h-10 rounded-full border border-brand-200 bg-white px-4 text-sm focus:border-gold-400 focus:outline-none"
+            >
+              <option value="">All</option>
+              {INDIAN_STATES.map((state) => (
+                <option key={state.code} value={state.code}>
+                  {state.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="member-country" className="mb-1.5 block text-xs font-semibold text-slate-600">
+              Country
+            </label>
+            <select
+              id="member-country"
+              name="country"
+              defaultValue={query.country}
+              className="h-10 rounded-full border border-brand-200 bg-white px-4 text-sm focus:border-gold-400 focus:outline-none"
+            >
+              <option value="">All</option>
+              {COUNTRIES.map((country) => (
+                <option key={country.code} value={country.code}>
+                  {country.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="member-donated" className="mb-1.5 block text-xs font-semibold text-slate-600">
+              Blood donated
+            </label>
+            <select
+              id="member-donated"
+              name="donated"
+              defaultValue={query.donated}
+              className="h-10 rounded-full border border-brand-200 bg-white px-4 text-sm focus:border-gold-400 focus:outline-none"
+            >
+              <option value="all">All</option>
+              <option value="yes">Donated</option>
+              <option value="no">Never donated</option>
+            </select>
+          </div>
+          <div>
+            <label htmlFor="member-dob-from" className="mb-1.5 block text-xs font-semibold text-slate-600">
+              Born after
+            </label>
+            <input
+              id="member-dob-from"
+              name="dobFrom"
+              type="date"
+              defaultValue={query.dobFrom}
+              className="h-10 rounded-full border border-brand-200 bg-white px-4 text-sm focus:border-gold-400 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label htmlFor="member-dob-to" className="mb-1.5 block text-xs font-semibold text-slate-600">
+              Born before
+            </label>
+            <input
+              id="member-dob-to"
+              name="dobTo"
+              type="date"
+              defaultValue={query.dobTo}
+              className="h-10 rounded-full border border-brand-200 bg-white px-4 text-sm focus:border-gold-400 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label htmlFor="member-reg-from" className="mb-1.5 block text-xs font-semibold text-slate-600">
+              Registered after
+            </label>
+            <input
+              id="member-reg-from"
+              name="registeredFrom"
+              type="date"
+              defaultValue={query.registeredFrom}
+              className="h-10 rounded-full border border-brand-200 bg-white px-4 text-sm focus:border-gold-400 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label htmlFor="member-reg-to" className="mb-1.5 block text-xs font-semibold text-slate-600">
+              Registered before
+            </label>
+            <input
+              id="member-reg-to"
+              name="registeredTo"
+              type="date"
+              defaultValue={query.registeredTo}
+              className="h-10 rounded-full border border-brand-200 bg-white px-4 text-sm focus:border-gold-400 focus:outline-none"
+            />
           </div>
           <div>
             <label htmlFor="member-sort" className="mb-1.5 block text-xs font-semibold text-slate-600">

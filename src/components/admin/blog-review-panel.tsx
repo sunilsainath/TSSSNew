@@ -7,6 +7,7 @@ import { ResourceForm } from "@/components/admin/resource-form";
 import { ENTITY_SPECS } from "@/lib/admin/entities";
 import type { BlogRow, BlogStatus } from "@/lib/types";
 import { PLACEHOLDER_BLOG_IMAGE } from "@/lib/constants";
+import { formatDateTime } from "@/lib/utils/format";
 
 export function BlogReviewPanel({ blog, status }: { blog: BlogRow; status: BlogStatus }) {
   const [open, setOpen] = useState(true);
@@ -47,7 +48,7 @@ export function BlogReviewPanel({ blog, status }: { blog: BlogRow; status: BlogS
               ["Email", blog.author_email],
               ["Mobile", blog.author_mobile ?? "—"],
               ["Category", blog.category],
-              ["Submitted", new Date(blog.created_at).toLocaleString("en-IN")],
+              ["Submitted", formatDateTime(blog.created_at)],
               ["Queue", status],
             ].map(([label, value]) => (
               <div key={label}>

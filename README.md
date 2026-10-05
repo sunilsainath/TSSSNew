@@ -333,6 +333,11 @@ npm run test:photobooth                           # 10 checks: photo compositing
 node scripts/auth-flow-check.mjs                  # 13 checks: admin guard, reset pages,
                                                    # recovery code handling
 node scripts/login-lockout-check.mjs email pass   # 9 checks: durable sign-in lockout
+node scripts/blog-create-check.mjs email pass     # 10 checks: admin blog creation
+node scripts/member-filter-check.mjs email pass   # 21 checks: member filters + export
+node scripts/id-card-check.mjs email pass         # 10 checks: ID card delivery + auth
+node scripts/id-card-bulk-check.mjs email pass    # 11 checks: bulk ID card ZIP
+node scripts/donation-import-check.mjs email pass # 16 checks: CSV import + dedupe
 ```
 
 Helpers:
@@ -395,7 +400,10 @@ src/
 supabase/
   migrations/0001_init.sql, 0002_banner_visibility.sql,
             0003_admin_grants.sql, 0004_photo_booth.sql,
-            0005_admin_auth_hardening.sql
+            0005_admin_auth_hardening.sql,
+            0006_profiles_and_blood_donation.sql,
+            0007_blog_created_by.sql, 0008_member_filter_rpc.sql,
+            0009_donation_standalone_dedupe.sql
   seed.sql, photo-booth-seed.sql, remove-demo-content.sql, reset-sequences.sql
 scripts/               SQL helpers, frame/placeholder generators, smoke tests, dev helpers
 ```

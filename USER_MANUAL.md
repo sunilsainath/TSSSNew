@@ -33,6 +33,7 @@ no technical knowledge is assumed.
 18. [Blogs](#18-blogs)
 19. [Registrations](#19-registrations)
 20. [Blood help](#20-blood-help)
+20A. [Blood donation](#20a-blood-donation)
 21. [Photo booth](#21-photo-booth)
 22. [Settings](#22-settings)
 23. [Team and roles](#23-team-and-roles)
@@ -249,18 +250,26 @@ Limits: **3 submissions per day** from the same device. Blank lines separate par
 | Field | Required | Rules |
 | --- | --- | --- |
 | Full Name | Yes | Letters only (Telugu and other scripts accepted). 2–120 characters |
+| Father's Name | Yes | Same rules as your name |
 | Date of Birth | Yes | Must be a real past date, within the last 120 years |
+| Gender | Yes | Male, Female, Other, or Prefer not to say |
+| Blood Group | Yes | A+, A-, B+, B-, AB+, AB-, O+, O-, or **I Don't Know** |
 | Village | Yes | 2–120 characters |
-| Mobile Number | Yes | Exactly 10 digits, starting with 6, 7, 8 or 9 |
+| Country | Yes | Defaults to India. Choosing another country changes the dialling code |
+| State | Yes | Indian state, e.g. Telangana |
+| Mobile Number | Yes | Exactly 10 digits, starting with 6, 7, 8 or 9. Shown with the country's code, e.g. +91 |
 | Email Address | No | For event updates |
+| Photo | No | JPG or PNG, up to 4 MB. Printed on your ID card |
 
 ### How it works
 
-1. Fill the form and press **Create my registration**.
+1. Fill the form and press **Submit Registration**.
 2. A green confirmation appears with your registration number in large gold type, formatted
    like **TSSS000123**.
 3. A summary table shows your name, date of birth, village and registration date.
-4. Use **Print** or **Download / Save as PDF** to keep a copy. **Back to home** finishes.
+4. Press **Download your ID card** for a printable card with your photo and details. The link
+   works for one hour. Afterwards, use **Print** or **Download / Save as PDF** to keep a copy.
+   **Back to home** finishes.
 
 ### If something goes wrong
 
@@ -277,6 +286,19 @@ or reused — the system issues each one once. If you lose it, contact the admin
 your name and date of birth.
 
 If the trust pauses registration, the button is disabled and a notice explains why.
+
+### Your ID card
+
+Every member gets an identity card in the trust's design: emblem and trust name across the
+top, your photograph, your name, father's name, designation, mobile number, address, blood
+group, date of birth, gender and age, with the organisation's phone and email at the bottom.
+
+- Press **Download your ID card** on the success screen. The link works for one hour and is
+  tied to your registration — it stops working if your phone number is corrected.
+- If you registered without a photo, the card prints "No photo" in its place.
+- Members registered before the photo field existed print em dashes for the fields they never
+  supplied. Their cards remain valid.
+- Lost the link? The trust can print a fresh copy from your registration number at any time.
 
 ---
 
@@ -333,6 +355,37 @@ Limit: **5 requests per hour** from the same device.
 A volunteer receives your request by email and WhatsApp and works through these stages:
 **New → Contacted → In progress → Resolved → Closed.** You will not see these statuses
 anywhere on the website — the reference number is your only handle, so quote it if you call.
+
+### Donor roll
+
+**/blood-donate** is the opposite direction: instead of asking for blood, you offer it.
+
+| Field | Required | Rules |
+| --- | --- | --- |
+| Full Name | Yes | 2–120 characters |
+| Father's Name | No | |
+| Date of Birth | No | |
+| Gender | No | Defaults to "Prefer not to say" |
+| Blood Group | Yes | A+, A-, B+, B-, AB+, AB-, O+, O-. **"I Don't Know" is not offered** — a donor record without a group cannot be matched to a patient |
+| Last Donation Date | No | Cannot be in the future |
+| Country | Yes | Defaults to India, drives the dialling code |
+| State | No | Defaults to Telangana |
+| City / District | No | |
+| Area / Locality | No | |
+| Address | No | Up to 400 characters |
+| Mobile Number | Yes | 10 digits starting with 6–9, with the country's code |
+| Email Address | No | |
+| Preferred Contact | No | Phone call, WhatsApp message or Email |
+| Availability | No | Free text, e.g. "weekends, evenings" |
+
+Press **I am willing to donate**. A green panel confirms you are on the roll — and that is
+all that happens. Nothing is scheduled. When a patient nearby needs your group, a volunteer
+calls you directly.
+
+If you have registered before with the same mobile number, your record is **updated** rather
+than duplicated, so the dashboard never double counts you.
+
+Limit: **5 donor registrations per day** from the same device.
 
 ---
 
@@ -668,8 +721,14 @@ New items are created **unpublished** — review before publishing.
 
 ## 18. Blogs
 
-**/admin/blogs/pending**, `/approved`, `/rejected` — one page serves four queues. Each shows
-up to 100 articles, newest first.
+**/admin/blogs/new**, `/pending`, `/approved`, `/rejected` — one page serves the queues. Each
+shows up to 100 articles, newest first.
+
+### Writing a post
+
+Press **New post** (in the menu or on any queue page). The author fields default to you; replace
+them with a guest author when publishing on somebody else's behalf. Saving as **Approved**
+publishes immediately; the other statuses behave exactly like reviewed submissions.
 
 > A fourth queue, **unpublished** (approved but hidden), exists at
 > `/admin/blogs/unpublished` but is not in the menu. You can reach it by URL or from a
@@ -704,7 +763,8 @@ on the left (read-only), and an editable form on the right.
 | Status | Yes | Pending review / Approved (public) / Rejected / Approved but unpublished |
 | Review note | No | Internal only. Never shown publicly |
 
-Author name, email and mobile are **not** editable — they came from the submission.
+Author name, email and mobile are editable — they default to the submission but can be
+corrected.
 
 Press **Close** to collapse the panel, or **Review "…" again** to reopen it.
 
@@ -717,11 +777,19 @@ they exist only by public registration.
 
 ### Finding members
 
-- **Search** covers registration number, name, village and mobile.
+- **Search** covers registration number, name, father's name, village, mobile and email.
 - **Status** — All / Active / Disabled.
+- **Gender, blood group, state, country** — dropdowns. A mistyped value in the address bar is
+  treated as unset rather than emptying the list.
+- **Blood donated** — All / Donated / Never donated, matched against the donation records.
+- **Date ranges** — born after/before, and registered after/before.
 - **Sort** — click the Registration No., Full Name, Date of Birth, Village or Registered column
   headers to sort; click again to reverse. Changing filters resets to page 1.
 - **Pages** — 25 per page by default.
+- **Reset** clears every filter at once.
+
+Every filter works alone and in combination, and the same query drives the list, the count
+and the export — what is listed is what downloads.
 
 **Columns**: Registration No., Full Name, Date of Birth, Village, Mobile, Registered, Status,
 Actions.
@@ -734,9 +802,13 @@ must never be reused.
 
 ### Viewing a member
 
-The panel shows the registration number, registered/updated timestamps, normalised mobile and
-status, alongside an editable form: full name, date of birth, village, mobile, email, status
-(active/disabled) and internal notes.
+The panel shows the registration number, timestamps, normalised mobile, country, state and
+status, alongside an editable form covering every profile field: name, father's name, gender,
+blood group, date of birth, village, state and country codes, dialling code, mobile, email,
+designation, profile photo, status and internal notes.
+
+A **Download ID card** button renders the member's card from their current details — reissue
+whenever required, and it always reflects the latest edit.
 
 A note on the page is worth reading: **registration numbers come from a database sequence and
 can never be reused or edited**, and the database prevents two members sharing a name and date
@@ -744,20 +816,30 @@ of birth. If you change a name or date of birth into a conflict, the save is rej
 
 ### Export — `/admin/registrations/export`
 
-Produces a CSV of members. It inherits any search or status filter from the address you arrive
-on, so filter on the Registrations page first, then use its **Export CSV** link.
+Produces a CSV of members. It inherits **every** filter from the address you arrive on, so
+filter on the Registrations page first, then use its **Export CSV** link — the file matches
+the list.
 
 The page reports how many records match, offers **Download CSV**, shows the first ten rows in a
 preview table, and prints the first 2000 characters of the raw file.
 
-**The CSV has seven columns:**
+**The CSV has fourteen columns:**
 
-`registration_number`, `full_name`, `date_of_birth`, `village`, `mobile_number`, `status`,
+`registration_number`, `full_name`, `father_name`, `date_of_birth`, `gender`, `blood_group`,
+`village`, `state_code`, `country_code`, `mobile_number`, `email`, `designation`, `status`,
 `registered_at`
 
 Notes: dates of birth are `YYYY-MM-DD`; registration timestamps look like
-`04 Oct 2026, 14:32`. **Email addresses and internal notes are not exported.** Exports are
-capped at 10,000 rows.
+`04/10/2026, 14:32`. **Internal notes are not exported.** Exports are capped at 10,000 rows.
+
+### Bulk ID cards — `/admin/registrations/id-cards`
+
+Downloads a ZIP of identity cards for every member matching the current filters — one PNG per
+member named by registration number, plus a README describing the contents.
+
+Only 25 cards fit in one file (rendering is the bottleneck), so a larger selection asks you to
+narrow the filters and download each slice separately. The button on the member list carries
+your filters across.
 
 ---
 
@@ -851,6 +933,69 @@ If a channel is switched off in settings, its attempts are logged as **Skipped**
 
 > **Test notification buttons on the Settings page are restricted to Super Admins.** An Admin
 > will see the buttons but get a permission error. Ask a Super Admin to test.
+
+## 20A. Blood donation
+
+Separate from emergency Blood Help above: this module tracks **willing donors** and
+**planned donations** — camps, regular donors and scheduled needs. It sends no automatic
+notifications. When a matching request arrives, a volunteer calls the donor.
+
+### Dashboard — `/admin/blood-donation`
+
+Eight counters: registered donors, blood donations, units donated, blood requests, fulfilled
+requests, pending requests, units requested, units fulfilled. All respect the area selection.
+
+Below them, a **by blood group** table (donors, donations, units, requests per group) and an
+**area table with drill-down**: states first, then cities within a state, then areas within a
+city. Every number derives live from the donation records, so imported camps appear
+immediately.
+
+### Donors — `/admin/blood-donation/donors`
+
+Everyone on the roll, whether they signed up at `/blood-donate` or an administrator added
+them for a walk-in or phone registration.
+
+- **Filters**: free text (name, mobile, city, area), blood group, willingness.
+- **Actions**: **Edit**, **Mark willing / unwilling**, **Delete** (with confirmation).
+- The add/edit form covers every donor field. A mobile number already on the roll updates the
+  existing record instead of creating a duplicate.
+- Donors who ask to be removed should be marked unwilling rather than deleted, so their past
+  donations stay on the dashboard.
+
+### Requests — `/admin/blood-donation/requests`
+
+Planned, non-emergency requests with their own lifecycle: **Pending → In Progress →
+Fulfilled**, plus **Cancelled**. Status chips filter the list; each card shows the reference
+number (`BDR000001` and on), patient, hospital, contact, required date and units.
+
+- **Update status** expands inline for quick status and fulfilled-unit changes.
+- **Edit details** opens the full form. New requests get their number automatically.
+- Quick buttons move a request forward one step. Changing status notifies nobody — call the
+  people involved.
+
+### Camps — `/admin/blood-donation/camps`
+
+Where and when group donations happened. Each camp links straight to the import page with
+itself preselected. Deleting a camp keeps its donation records — they become standalone.
+
+### Bulk import — `/admin/blood-donation/import`
+
+Records a whole camp at once from a spreadsheet:
+
+1. **Download template** for the exact columns. Working in Excel? *Save As → CSV* — the
+   importer reads CSV only.
+2. Fill it in. Dates are `YYYY-MM-DD`; blood groups are the eight clinical values. Give every
+   row its own reference so re-uploads are recognised.
+3. Pick the camp (or leave it unset for standalone donations) and **Validate file**. Nothing is
+   written yet.
+4. Review every row: **Ready**, **Already recorded**, or the specific problem with its line
+   number. Fix the file for problem rows.
+5. **Import** writes only the valid new rows. Duplicates and error rows are skipped and
+   listed afterwards, with counts.
+
+Donors are matched by mobile number — an existing donor is linked (and their last donation
+date moved forward), a new number creates a donor marked willing. Every import is itself
+written to the audit log. Files are capped at 2 MB / 2000 rows; split larger camps.
 
 ---
 
@@ -1027,8 +1172,9 @@ to see exactly what a previous administrator altered.
 
 **What is recorded**: every create, update and delete in the panel, plus banner
 enable/disable, blog approvals, event publishing and featuring, member activation and
-disabling, photo-booth window changes, and notification retries. Public registrations, blog
-submissions and blood requests are recorded too, from the database side.
+disabling, photo-booth window changes, notification retries and bulk donation imports
+(`bulk_import`). Public registrations, blog submissions, blood requests and donor
+registrations are recorded too, from the database side.
 
 **Authentication events** appear with the entity `admin_auth`:
 
@@ -1081,8 +1227,10 @@ select public.clear_login_failures('admin-login:account:<email>');
 | --- | --- |
 | Registration | 8 attempts per hour per device |
 | Blood help | 5 requests per hour per device |
+| Donor registration | 5 per day per device |
 | Blog submission | 3 per day per device |
 | Contact form | No application-side limit (FormSubmit applies its own) |
+| Admin sign-in | 10 failures per 15 minutes, per device **and** per account |
 
 **Field limits**
 
@@ -1092,10 +1240,13 @@ select public.clear_login_failures('admin-login:account:<email>');
 | Village | 120 characters |
 | Mobile number | 10 digits, starting 6–9 |
 | Blood units per request | 50 |
+| Donation units per record | 10 |
 | Blog title | 200 characters |
 | Blog content | No practical limit; excerpt capped at 400 characters |
 | Contact message | 4,000 characters |
 | Blood request message | 1,000 characters |
+| Donor address | 400 characters |
+| Donor availability note | 200 characters |
 | Event summary | 600 characters (truncated silently) |
 | Any admin text field | 5,000 characters |
 
@@ -1112,13 +1263,17 @@ empty to keep the current image. **There is no way to delete or remove an image 
 | Media items | 100 per type |
 | Blog queue | 100 per queue |
 | Blood requests | 200 |
+| Donors, donation requests, camps | 200 per list |
 | Notification logs | 200 |
 | Registrations export | 10,000 rows |
+| Bulk ID cards | 25 cards per ZIP file |
+| Import file | 2 MB / 2000 rows per upload |
 | Audit log | 50 per page (unlimited total) |
 | Gallery event shortcuts | First 12 events |
 | Photo booth windows | 12 per template |
 
-**There are no bulk or multi-select operations anywhere.** Records are handled one at a time.
+**There are no bulk or multi-select operations anywhere, except the donation import and the
+bulk ID card download.** Everything else is handled one record at a time.
 
 ---
 
@@ -1132,6 +1287,7 @@ empty to keep the current image. **There is no way to delete or remove an image 
 | "My registration number is lost" | Numbers cannot be looked up or reissued from the website. Find them in the member list by name and date of birth |
 | "I submitted a blog and cannot see it" | It is waiting for review. Check the Pending queue |
 | "My blood request shows nothing" | There is no public tracking page. Quote the reference number when you call |
+| "My ID card link expired" | Links last one hour. The trust can reissue a card from the registration number at any time |
 | "The contact form says sent but nobody replied" | Check the trust inbox, and confirm the FormSubmit activation email was accepted the first time |
 | "The photo booth will not download" | Mobile browsers sometimes open the share sheet instead. Dismiss it and the file saves. Try a desktop browser |
 | "A page shows a broken image" | The photograph may not have uploaded. An administrator can re-upload it |
@@ -1153,6 +1309,9 @@ empty to keep the current image. **There is no way to delete or remove an image 
 | Cannot change someone's role | Not supported in the panel — deactivate and re-add, or use Supabase |
 | Cannot reset a password for someone | Use **Forgot your password?** on the sign-in screen and send them the link |
 | Blood request shows "Unassigned" | No active volunteer covers that area. Add one under Administrators |
+| Import says "header is missing" | The first row must match the template exactly. Re-download it and paste data under it |
+| Import shows "Already recorded" for everything | That exact file (or those references) was already imported. Change the references for genuinely new donations |
+| Dashboard numbers look wrong after import | Check the import result: error rows are skipped, not written. Fix and re-upload those rows; duplicates stay skipped |
 | Notifications all show "Skipped" | The channel is switched off in Settings, or the provider keys are missing. Both are logged, not delivered |
 | Cannot delete a category | Move its events first — or deactivate the category instead |
 | Cannot delete a member | Deliberate. Members come from public registration. Disable duplicates instead |
@@ -1168,7 +1327,8 @@ Worth knowing so nobody is surprised:
 - **Roles cannot be changed in the panel.**
 - **Email and WhatsApp notifications are not yet configured**, so alerts are logged as
   "Skipped" rather than delivered. Configure the provider keys on the server to switch them on.
-- **No bulk actions** anywhere — approving fifty blogs means fifty clicks.
+- **Still no bulk actions for blogs, events or galleries** — approving fifty blogs means fifty
+  clicks. Bulk import exists only for donations; bulk download only for ID cards.
 - **Images cannot be deleted** from a record once uploaded.
 - **Lists are capped** (see [Limits](#25-limits-and-quotas)); beyond the cap, older records are
   simply not listed.
@@ -1178,5 +1338,10 @@ Worth knowing so nobody is surprised:
   bothers visitors.
 - **A fourth blog queue, "unpublished", is missing from the menu.** Reach it at
   `/admin/blogs/unpublished`.
+- **Two-factor authentication is not enabled**, so an administrator account is protected by
+  its password alone.
+- **The importer reads CSV only.** Excel files must be saved as CSV first.
+- **All user-facing dates render DD/MM/YYYY**, but the browser's own date picker follows the
+  visitor's locale and cannot be forced from the site.
 - **Two-factor authentication is not enabled**, so an administrator account is protected by
   its password alone.

@@ -16,17 +16,37 @@ export async function GET(request: NextRequest) {
   const query = parseMemberQuery({
     search: params.get("search") ?? undefined,
     status: params.get("status") ?? undefined,
+    gender: params.get("gender") ?? undefined,
+    bloodGroup: params.get("bloodGroup") ?? undefined,
+    state: params.get("state") ?? undefined,
+    country: params.get("country") ?? undefined,
+    donated: params.get("donated") ?? undefined,
+    dobFrom: params.get("dobFrom") ?? undefined,
+    dobTo: params.get("dobTo") ?? undefined,
+    registeredFrom: params.get("registeredFrom") ?? undefined,
+    registeredTo: params.get("registeredTo") ?? undefined,
   });
 
-  const { rows } = await fetchAllMembers(query);
+  const { rows, error } = await fetchAllMembers(query);
+
+  if (error) {
+    return NextResponse.json({ error }, { status: 500 });
+  }
 
   const csv = toCsv(
     rows.map((row) => ({
       registration_number: row.registration_number,
       full_name: row.full_name,
+      father_name: row.father_name ?? "",
       date_of_birth: row.date_of_birth,
+      gender: row.gender ?? "",
+      blood_group: row.blood_group ?? "",
       village: row.village ?? "",
+      state_code: row.state_code ?? "",
+      country_code: row.country_code ?? "",
       mobile_number: row.mobile_number,
+      email: row.email ?? "",
+      designation: row.designation ?? "",
       status: row.status,
       registered_at: formatDateTime(row.created_at as string),
     })),

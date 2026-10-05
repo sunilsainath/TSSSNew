@@ -15,10 +15,12 @@ import { createClient } from "@/lib/supabase/server";
 import {
   blogSubmissionSchema,
   bloodHelpSchema,
+  donorRegistrationSchema,
   fieldErrors,
   registrationSchema,
   type BlogSubmissionInput,
   type BloodHelpInput,
+  type DonorRegistrationInput,
   type RegistrationInput,
 } from "@/lib/validation/schemas";
 import {
@@ -324,6 +326,140 @@ export async function submitBloodHelpRequest(
       requestNumber: String(row?.request_number ?? ""),
       unassigned: isUnassigned,
     },
+  };
+}
+
+/* -------------------------------------------------------------------------- */
+/* Blood donor registration                                                 */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Registers somebody as willing to donate blood.
+ *
+ * Unlike the emergency blood help form, this creates no notifications and no
+ * routing. It records intent, so the dashboard and the administrators know who
+ * to call when a matching request arrives.
+ */
+export async function registerDonor(
+  _previous: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  if (isHoneypotTripped(formData)) {
+    return { status: "success", message: "Thank you for your willingness to donate." };
+  }
+
+  const headerList = await headers();
+  const identifier = clientIdentifier(headerList);
+
+  const limit = rateLimit(`donor:${identifier}`, { limit: 5, windowSeconds: 86400 });
+  if (!limit.allowed) {
+    return {
+      status: "error",
+      message: "You have already registered as a donor recently. Please try again tomorrow.",
+    };
+  }
+
+  const allowed = await verifyTurnstile(
+    typeof formData.get("turnstileToken") === "string" ? String(formData.get("turnstileToken")) : null,
+    identifier,
+  );
+  if (!allowed) {
+    return { status: "error", message: "Spam verification failed. Please refresh the page and try again." };
+  }
+
+  const parsed = donorRegistrationSchema.safeParse({
+    fullName: formData.get("fullName"),
+    fatherName: formData.get("fatherName") ?? "",
+    mobileNumber: formData.get("mobileNumber"),
+    email: formData.get("email") ?? "",
+    bloodGroup: formData.get("bloodGroup"),
+    dateOfBirth: formData.get("dateOfBirth") ?? "",
+    gender: formData.get("gender") ?? "",
+    countryCode: formData.get("countryCode"),
+    stateCode: formData.get("stateCode") ?? "",
+    city: formData.get("city") ?? "",
+    area: formData.get("area") ?? "",
+    address: formData.get("address") ?? "",
+    lastDonationDate: formData.get("lastDonationDate") ?? "",
+    availability: formData.get("availability") ?? "",
+    preferredContact: formData.get("preferredContact") ?? "phone",
+  });
+
+  if (!parsed.success) {
+    return {
+      status: "error",
+      message: "Please correct the highlighted fields.",
+      errors: fieldErrors(parsed.error),
+    };
+  }
+
+  const input: DonorRegistrationInput = parsed.data;
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.rpc("submit_donor", {
+    p_full_name: input.fullName,
+    p_father_name: input.fatherName || null,
+    p_mobile_number: input.mobileNumber,
+    p_phone_country_code: null,
+    p_email: input.email || null,
+    p_blood_group: input.bloodGroup,
+    p_date_of_birth: input.dateOfBirth || null,
+    p_gender: input.gender || null,
+    p_country_code: input.countryCode.toUpperCase(),
+    p_state_code: input.stateCode || null,
+    p_city: input.city || null,
+    p_area: input.area || null,
+    p_address: input.address || null,
+    p_last_donation_date: input.lastDonationDate || null,
+    p_availability: input.availability || null,
+    p_preferred_contact: input.preferredContact || "phone",
+    p_member_id: null,
+    p_rate_key: identifier,
+  });
+
+  if (error) {
+    const code = error.message ?? "";
+    if (code.includes("RATE_LIMITED")) {
+      return {
+        status: "error",
+        message: "You have already registered as a donor recently. Please try again tomorrow.",
+      };
+    }
+    if (code.includes("BLOOD_GROUP_REQUIRED")) {
+      return {
+        status: "error",
+        message: "A blood donor record needs a known blood group. If you do not know yours, most blood banks test it free before donation.",
+      };
+    }
+    if (
+      code.includes("INVALID_MOBILE") ||
+      code.includes("INVALID_NAME") ||
+      code.includes("INVALID_FATHER_NAME") ||
+      code.includes("INVALID_BLOOD_GROUP") ||
+      code.includes("INVALID_GENDER") ||
+      code.includes("INVALID_COUNTRY") ||
+      code.includes("INVALID_CONTACT_PREFERENCE") ||
+      code.includes("INVALID_LAST_DONATION")
+    ) {
+      return { status: "error", message: "Please check your details and try again." };
+    }
+    console.error("submit_donor failed:", error.message);
+    return {
+      status: "error",
+      message: "We could not record your willingness right now. Please try again in a moment.",
+    };
+  }
+
+  const row = Array.isArray(data) ? data[0] : data;
+
+  revalidatePath("/admin/blood-donation/donors");
+
+  return {
+    status: "success",
+    message:
+      row?.result_code === "updated"
+        ? "Thank you. Your donor record has been updated."
+        : "Thank you for stepping forward. You are now on the donor roll, and we will call you when your blood group is needed.",
   };
 }
 

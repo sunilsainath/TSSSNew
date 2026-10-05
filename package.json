@@ -14,6 +14,9 @@
     "db:apply:photobooth": "node scripts/db-apply.mjs supabase/migrations/0004_photo_booth.sql",
     "db:apply:auth": "node scripts/db-apply.mjs supabase/migrations/0005_admin_auth_hardening.sql",
     "db:apply:profiles": "node scripts/db-apply.mjs supabase/migrations/0006_profiles_and_blood_donation.sql",
+    "db:apply:blog-author": "node scripts/db-apply.mjs supabase/migrations/0007_blog_created_by.sql",
+    "db:apply:member-filter": "node scripts/db-apply.mjs supabase/migrations/0008_member_filter_rpc.sql",
+    "db:apply:standalone-dedupe": "node scripts/db-apply.mjs supabase/migrations/0009_donation_standalone_dedupe.sql",
     "db:seed": "node scripts/db-apply.mjs supabase/seed.sql",
     "db:remove-demo": "node scripts/db-apply.mjs supabase/remove-demo-content.sql",
     "db:reset-sequences": "node scripts/db-apply.mjs supabase/reset-sequences.sql",
@@ -36,6 +39,7 @@
   "dependencies": {
     "@supabase/ssr": "0.12.7",
     "@supabase/supabase-js": "2.117.2",
+    "fflate": "^0.8.3",
     "next": "16.3.8",
     "react": "19.2.8",
     "react-dom": "19.2.8",

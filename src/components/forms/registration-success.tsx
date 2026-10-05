@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 
+import { formatDate } from "@/lib/utils/format";
 import { PrintButton } from "./print-button";
 
 export type RegistrationConfirmation = {
@@ -13,17 +14,6 @@ export type RegistrationConfirmation = {
   /** Signed, single-use link to this member's own ID card. */
   idCardToken?: string;
 };
-
-function formatDate(value: string) {
-  if (!value) return "—";
-  const date = value.length === 10 ? new Date(`${value}T00:00:00`) : new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat("en-IN", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  }).format(date);
-}
 
 export function RegistrationSuccess({ data }: { data: RegistrationConfirmation }) {
   const rows = [

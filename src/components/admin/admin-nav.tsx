@@ -47,6 +47,7 @@ const NAV: NavGroup[] = [
   {
     title: "Blogs",
     items: [
+      { href: "/admin/blogs/new", label: "New post", minimum: "content_manager" },
       { href: "/admin/blogs/pending", label: "Pending", minimum: "content_manager" },
       { href: "/admin/blogs/approved", label: "Approved", minimum: "content_manager" },
       { href: "/admin/blogs/rejected", label: "Rejected", minimum: "content_manager" },
@@ -66,6 +67,16 @@ const NAV: NavGroup[] = [
       { href: "/admin/blood-help/districts", label: "Districts / Areas", minimum: "blood_help_manager" },
       { href: "/admin/blood-help/administrators", label: "Administrators", minimum: "blood_help_manager" },
       { href: "/admin/blood-help/notifications", label: "Notification Logs", minimum: "blood_help_manager" },
+    ],
+  },
+  {
+    title: "Blood Donation",
+    items: [
+      { href: "/admin/blood-donation", label: "Dashboard", minimum: "blood_help_manager" },
+      { href: "/admin/blood-donation/donors", label: "Donors", minimum: "blood_help_manager" },
+      { href: "/admin/blood-donation/requests", label: "Requests", minimum: "blood_help_manager" },
+      { href: "/admin/blood-donation/camps", label: "Camps", minimum: "content_manager" },
+      { href: "/admin/blood-donation/import", label: "Bulk Import", minimum: "content_manager" },
     ],
   },
   {

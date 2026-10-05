@@ -1,12 +1,17 @@
-const DATE_FORMAT = new Intl.DateTimeFormat("en-IN", {
+/**
+ * Every user-facing date in the application renders through these two
+ * functions, so the format is consistent: numeric day/month/year, Indian order.
+ * The database keeps ISO values; this file only changes how they are shown.
+ */
+const DATE_FORMAT = new Intl.DateTimeFormat("en-GB", {
   day: "2-digit",
-  month: "short",
+  month: "2-digit",
   year: "numeric",
 });
 
-const DATE_TIME_FORMAT = new Intl.DateTimeFormat("en-IN", {
+const DATE_TIME_FORMAT = new Intl.DateTimeFormat("en-GB", {
   day: "2-digit",
-  month: "short",
+  month: "2-digit",
   year: "numeric",
   hour: "2-digit",
   minute: "2-digit",

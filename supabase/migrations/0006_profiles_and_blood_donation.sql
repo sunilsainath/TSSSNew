@@ -284,6 +284,10 @@ returns text language sql volatile as $$
   select 'BDR' || lpad(nextval('public.donation_request_seq')::text, 6, '0');
 $$;
 
+-- Assigned automatically, so neither the panel nor the import has to invent one.
+alter table public.donation_requests
+  alter column request_number set default public.next_donation_request_number();
+
 -- ---------------------------------------------------------------------------
 -- E. updated_at triggers
 -- ---------------------------------------------------------------------------
