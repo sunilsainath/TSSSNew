@@ -223,9 +223,19 @@ nothing is hard-coded in the app.
 - Server-side validation with zod **and** database constraints/unique indexes.
 - Rate limiting per source (in-memory + database) and a honeypot field on public
   forms; optional Cloudflare Turnstile support.
+- Client identity prefers the platform-owned `x-real-ip` and otherwise uses the
+  rightmost forwarded address, so a spoofed leftmost entry cannot reset limits.
 - Admin sign-in is throttled in the **database**, not in the Node process, so the
   lockout survives ephemeral serverless instances. Ten failures in 15 minutes blocks
   both the source address and the target account; a successful sign-in clears both.
+- Account creation re-verifies super_admin inside the action, accepts only known
+  roles, and can never grant above the caller's own rank.
+- Blog HTML is filtered by the `sanitize-html` parser (script, event handlers,
+  javascript:/data:/vbscript: and protocol-relative URLs are rejected), with the
+  same allowlist and output shape as before.
+- Uploaded images are decoded with sharp before storage, so the stored bytes are
+  proven to match the claimed type rather than trusting the client-sent MIME.
+  Server Actions accept bodies up to 4 MB to match the advertised upload limit.
 - Self-service password reset and change at `/admin/forgot-password` and
   `/admin/password`. Requires Supabase's redirect allow-list to include
   `NEXT_PUBLIC_SITE_URL`.
@@ -338,6 +348,8 @@ node scripts/member-filter-check.mjs email pass   # 21 checks: member filters + 
 node scripts/id-card-check.mjs email pass         # 10 checks: ID card delivery + auth
 node scripts/id-card-bulk-check.mjs email pass    # 11 checks: bulk ID card ZIP
 node scripts/donation-import-check.mjs email pass # 16 checks: CSV import + dedupe
+node scripts/sanitizer-check.mjs                 # 25 checks: XSS payloads + output contract
+node scripts/security-audit-check.mjs email pass # 10 checks: upload forgery, roles, limiter identity
 ```
 
 Helpers:

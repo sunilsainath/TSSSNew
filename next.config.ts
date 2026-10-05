@@ -17,6 +17,12 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.resolve(__dirname),
   },
+  experimental: {
+    // Server Actions reject bodies above 1 MB by default with an opaque 500.
+    // The application advertises 4 MB uploads, so the framework limit is set
+    // to match rather than silently contradicting it.
+    serverActions: { bodySizeLimit: "4mb" },
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "*.supabase.co", pathname: "/storage/v1/object/public/**" },

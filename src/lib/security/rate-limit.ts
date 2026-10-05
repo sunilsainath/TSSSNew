@@ -54,11 +54,26 @@ export function rateLimit(
   };
 }
 
-/** Best effort client identity for rate limiting (no PII is persisted). */
+/**
+ * Best effort client identity for rate limiting (no PII is persisted).
+ *
+ * The first X-Forwarded-For entry must never be trusted: every proxy appends
+ * to that header, so the leftmost address is whatever the client claimed. The
+ * platform-owned `x-real-ip` is preferred (Vercel overwrites it with the true
+ * client address); otherwise the rightmost entry is used, which is the address
+ * added by the nearest proxy rather than the one the client asserted.
+ */
 export function clientIdentifier(headers: Headers): string {
+  const realIp = headers.get("x-real-ip")?.trim();
+  if (realIp) return realIp;
+
   const forwarded = headers.get("x-forwarded-for");
-  if (forwarded) return forwarded.split(",")[0].trim();
-  return headers.get("x-real-ip") ?? "anonymous";
+  if (forwarded) {
+    const entries = forwarded.split(",").map((entry) => entry.trim()).filter(Boolean);
+    if (entries.length > 0) return entries[entries.length - 1];
+  }
+
+  return "anonymous";
 }
 
 /**

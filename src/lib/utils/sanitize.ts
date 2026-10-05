@@ -1,6 +1,17 @@
-/** Small, dependency free HTML sanitiser for admin authored content. */
+/**
+ * HTML sanitiser for admin-authored content.
+ *
+ * Tag filtering is done by the `sanitize-html` package, which parses the input
+ * as a real document instead of matching tags with regular expressions. A
+ * regex cannot know how a browser will parse `<a title=">">` or an entity
+ * encoded protocol, and every hand-rolled filter eventually learns that the
+ * hard way. The allowlist below mirrors what the previous implementation
+ * accepted, so stored content renders exactly as before.
+ */
 
-const ALLOWED_TAGS = new Set([
+import sanitize from "sanitize-html";
+
+const ALLOWED_TAGS = [
   "p",
   "br",
   "strong",
@@ -18,25 +29,7 @@ const ALLOWED_TAGS = new Set([
   "a",
   "code",
   "pre",
-]);
-
-const ALLOWED_ATTRIBUTES: Record<string, Set<string>> = {
-  a: new Set(["href", "target", "rel"]),
-};
-
-function escapeText(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
-function safeHref(href: string): string | null {
-  const trimmed = href.trim();
-  if (/^(https?:|mailto:|tel:|\/|#)/i.test(trimmed)) return trimmed;
-  return null;
-}
+];
 
 /**
  * Strips every tag that is not explicitly allowed and all event handler
@@ -48,55 +41,20 @@ export function sanitizeHtml(input: string): string {
 
   const withBreaks = input.replace(/\r\n/g, "\n").replace(/\n{3,}/g, "\n\n");
 
-  let output = "";
-  let index = 0;
+  const cleaned = sanitize(withBreaks, {
+    allowedTags: ALLOWED_TAGS,
+    allowedAttributes: {
+      a: ["href", "target", "rel"],
+    },
+    // Mirrors the previous safeHref: absolute http(s), mail, phone, and
+    // site-relative links only. Protocol-relative (//evil.example) URLs are
+    // rejected because the scheme is attacker-controlled.
+    allowedSchemes: ["http", "https", "mailto", "tel"],
+    allowedSchemesByTag: {},
+    allowProtocolRelative: false,
+  });
 
-  const tagPattern = /<\/?([a-zA-Z][a-zA-Z0-9]*)\b([^>]*)\/?>/g;
-  let match: RegExpExecArray | null;
-
-  while ((match = tagPattern.exec(withBreaks)) !== null) {
-    output += escapeText(withBreaks.slice(index, match.index));
-    index = match.index + match[0].length;
-
-    const rawTag = match[1].toLowerCase();
-    const isClosing = match[0].startsWith("</");
-
-    if (!ALLOWED_TAGS.has(rawTag)) continue;
-
-    const tag = isClosing ? `</${rawTag}>` : `<${rawTag}`;
-
-    if (isClosing) {
-      output += tag;
-      continue;
-    }
-
-    const attributes = ALLOWED_ATTRIBUTES[rawTag];
-    let rendered = tag;
-
-    if (attributes && match[2]) {
-      const attributePattern = /([a-zA-Z-]+)\s*=\s*("([^"]*)"|'([^']*)')/g;
-      let attributeMatch: RegExpExecArray | null;
-      while ((attributeMatch = attributePattern.exec(match[2])) !== null) {
-        const name = attributeMatch[1].toLowerCase();
-        if (!attributes.has(name)) continue;
-        const value = attributeMatch[3] ?? attributeMatch[4] ?? "";
-        if (name === "href") {
-          const href = safeHref(value);
-          if (!href) continue;
-          rendered += ` href="${escapeText(href)}"`;
-          continue;
-        }
-        rendered += ` ${name}="${escapeText(value)}"`;
-      }
-    }
-
-    rendered += ">";
-    output += rendered;
-  }
-
-  output += escapeText(withBreaks.slice(index));
-
-  return output
+  return cleaned
     .split(/\n{2,}/)
     .map((block) => block.trim())
     .filter(Boolean)

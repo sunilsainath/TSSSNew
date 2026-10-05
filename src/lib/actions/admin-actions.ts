@@ -6,6 +6,7 @@ import { z } from "zod";
 import { ENTITY_SPECS, type EntityKey, type FieldSpec } from "@/lib/admin/entities";
 import { getAdminSession, roleRank } from "@/lib/auth/session";
 import type { AdminState } from "@/lib/actions/state";
+import { uploadObjectKey, verifyImageFile } from "@/lib/security/uploads";
 import { createAdminClient } from "@/lib/supabase/server";
 import { slugify, sanitizeHtml } from "@/lib/utils/sanitize";
 
@@ -92,9 +93,6 @@ const UPLOAD_FOLDERS: Partial<Record<EntityKey, string>> = {
   photo_booth_slot: "photo-booth",
 };
 
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/avif"];
-const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
-
 /**
  * Placeholder that stands in for an image field during validation, before the
  * file has actually been uploaded. Replaced by the stored URL afterwards.
@@ -114,20 +112,19 @@ async function handleImageUploads(
     const file = formData.get(`${field.name}File`);
     if (!(file instanceof File) || file.size === 0) continue;
 
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      throw new Error(`${field.label}: only JPG, PNG, WebP or AVIF images are allowed.`);
-    }
-    if (file.size > MAX_IMAGE_BYTES) {
-      throw new Error(`${field.label}: image must be smaller than 4 MB.`);
+    // Decoded with sharp, so the stored bytes are proven to be the claimed
+    // image format rather than a script wearing its extension.
+    const verified = await verifyImageFile(file);
+    if (!verified.ok) {
+      throw new Error(`${field.label}: ${verified.error.charAt(0).toLowerCase()}${verified.error.slice(1)}`);
     }
 
-    const extension = file.type.split("/")[1].replace("jpeg", "jpg");
     const folder = UPLOAD_FOLDERS[entity] ?? "uploads";
-    const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${extension}`;
+    const path = uploadObjectKey(folder, verified.extension);
 
     const { error } = await admin.storage
       .from("public-media")
-      .upload(path, file, { contentType: file.type, upsert: false });
+      .upload(path, verified.buffer, { contentType: file.type, upsert: false });
 
     if (error) throw new Error(`${field.label}: upload failed (${error.message}).`);
 
@@ -412,6 +409,31 @@ async function createUserAccount(formData: FormData): Promise<AdminState> {
   const password = String(formData.get("password") ?? "");
   const role = String(formData.get("role") ?? "content_manager");
   const fullName = String(formData.get("full_name") ?? "").trim();
+
+  // Belt and braces: the caller already checked the entity's minimum role, but
+  // account creation is the one action that must never depend on a single
+  // check elsewhere. A session that is not super_admin cannot reach here even
+  // if the entity spec is ever misconfigured.
+  const session = await getAdminSession();
+  if (!session) {
+    return { status: "error", message: "Your session expired. Please sign in again." };
+  }
+  if (session.user.role !== "super_admin") {
+    await writeAudit("access_denied", "users", null, null, { attempted: "createUserAccount" });
+    return { status: "error", message: "You do not have permission to do that." };
+  }
+
+  // The role comes from the form, so it is validated twice: membership in the
+  // known set, and never above the caller's own rank. The second check is what
+  // makes privilege escalation structurally impossible rather than merely
+  // gated by today's entity spec.
+  const VALID_ROLES = ["super_admin", "admin", "content_manager", "blood_help_manager"] as const;
+  if (!(VALID_ROLES as readonly string[]).includes(role)) {
+    return { status: "error", message: "Select a valid role.", errors: { role: "Unknown role." } };
+  }
+  if (roleRank(role as (typeof VALID_ROLES)[number]) > roleRank(session.user.role)) {
+    return { status: "error", message: "You do not have permission to do that." };
+  }
 
   if (!z.email().safeParse(email).success) {
     return { status: "error", message: "Enter a valid email address.", errors: { email: "Invalid email." } };

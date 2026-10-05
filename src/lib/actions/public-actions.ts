@@ -31,6 +31,7 @@ import {
 } from "@/lib/security/rate-limit";
 import { dispatchBloodHelpNotifications } from "@/lib/notifications/dispatch";
 import { issueIdCardToken } from "@/lib/idcard/signed-link";
+import { uploadObjectKey, verifyImageFile } from "@/lib/security/uploads";
 import { slugify, textToSafeHtml } from "@/lib/utils/sanitize";
 import type { FormState } from "@/lib/actions/state";
 
@@ -556,29 +557,24 @@ export async function submitBlogPost(
 /* Shared image upload                                                        */
 /* -------------------------------------------------------------------------- */
 
-const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
-const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/avif"];
-
 /**
  * Uploads an image to the public Supabase Storage bucket.
- * Type and size are validated here and again by the storage bucket policy.
+ *
+ * The bytes are decoded with sharp before anything is stored, so a script
+ * renamed to .png is rejected no matter what MIME type it claims. The verified
+ * buffer — not the original file — is what gets uploaded.
  */
 export async function uploadPublicImage(
   file: File,
   folder = "uploads",
 ): Promise<{ ok: true; url: string } | { ok: false; error: string }> {
-  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-    return { ok: false, error: "Only JPG, PNG, WebP or AVIF images are allowed." };
-  }
-  if (file.size > MAX_IMAGE_BYTES) {
-    return { ok: false, error: "Image must be smaller than 4 MB." };
-  }
+  const verified = await verifyImageFile(file);
+  if (!verified.ok) return verified;
 
-  const extension = file.type.split("/")[1].replace("jpeg", "jpg");
-  const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${extension}`;
+  const path = uploadObjectKey(folder, verified.extension);
 
   const supabase = await createClient();
-  const { error } = await supabase.storage.from("public-media").upload(path, file, {
+  const { error } = await supabase.storage.from("public-media").upload(path, verified.buffer, {
     contentType: file.type,
     upsert: false,
   });

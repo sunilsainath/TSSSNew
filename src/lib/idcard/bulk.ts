@@ -47,8 +47,11 @@ export type BulkCardResult =
 
 /**
  * Renders the first MAX_CARDS_PER_BATCH members of `members`.
- * Photos are fetched with bounded concurrency so one slow image host cannot
- * stall the whole batch.
+ *
+ * Photos are fetched with bounded concurrency: sequential fetching made a
+ * 25-card download wait on 25 slow round trips one after another, while
+ * unbounded parallelism would spike memory and hammer the image host. Five at
+ * a time keeps both flat.
  */
 export async function renderCardsZip(
   members: BulkCardMember[],
@@ -67,20 +70,36 @@ export async function renderCardsZip(
   const entries: Record<string, Uint8Array> = {};
   const failures: string[] = [];
 
-  // Small batches keep memory flat; 25 cards at ~1.5 MB each is comfortable.
-  for (const row of batch) {
-    const member: IdCardMember = toIdCardMember(row);
+  const CONCURRENCY = 5;
 
-    try {
-      const assets = await buildIdCardAssets(row.profile_photo_url, { phone, email });
-      const png = await renderIdCardPng(
-        { ...member },
-        { ...assets, organizationPhone: phone, organizationEmail: email, motto: DEFAULT_MOTTO },
-      );
-      entries[idCardFileName(member)] = new Uint8Array(png);
-    } catch (error) {
-      failures.push(member.registrationNumber);
-      console.error(`id card batch: ${member.registrationNumber} failed:`, error);
+  for (let start = 0; start < batch.length; start += CONCURRENCY) {
+    const slice = batch.slice(start, start + CONCURRENCY);
+
+    // Small batches keep memory flat; 25 cards at ~1.5 MB each is comfortable.
+    const rendered = await Promise.all(
+      slice.map(async (row) => {
+        const member: IdCardMember = toIdCardMember(row);
+
+        try {
+          const assets = await buildIdCardAssets(row.profile_photo_url, { phone, email });
+          const png = await renderIdCardPng(
+            { ...member },
+            { ...assets, organizationPhone: phone, organizationEmail: email, motto: DEFAULT_MOTTO },
+          );
+          return { ok: true as const, member, png };
+        } catch (error) {
+          console.error(`id card batch: ${member.registrationNumber} failed:`, error);
+          return { ok: false as const, member };
+        }
+      }),
+    );
+
+    for (const item of rendered) {
+      if (item.ok) {
+        entries[idCardFileName(item.member)] = new Uint8Array(item.png);
+      } else {
+        failures.push(item.member.registrationNumber);
+      }
     }
   }
 
