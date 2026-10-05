@@ -474,11 +474,9 @@ begin
     raise exception 'INVALID_BLOOD_GROUP';
   end;
 
-  if v_group = 'UNKNOWN' then
-    -- "I Don't Know" is allowed for members but makes somebody useless as a
-    -- donor, so a donor must state a real group.
-    raise exception 'BLOOD_GROUP_REQUIRED';
-  end if;
+  -- "I Don't Know" is allowed: a willing donor who does not know their group is
+  -- still worth recording. The trust tests them at a camp or blood bank, and
+  -- the dashboard lists them under UNKNOWN for follow-up.
 
   if p_gender is not null and trim(p_gender) <> '' then
     begin

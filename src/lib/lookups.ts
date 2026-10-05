@@ -38,17 +38,6 @@ export const BLOOD_GROUP_OPTIONS: { value: string; label: string }[] = [
   { value: UNKNOWN_BLOOD_GROUP, label: "I Don't Know" },
 ];
 
-/**
- * Options for a blood donor.
- *
- * "I Don't Know" is deliberately absent: a donor record with no known group
- * cannot be matched to a request, and the database rejects it too.
- */
-export const DONOR_BLOOD_GROUP_OPTIONS = BLOOD_GROUPS.map((group) => ({
-  value: group,
-  label: group,
-}));
-
 export function isKnownBloodGroup(value: string | null | undefined): boolean {
   return !!value && (BLOOD_GROUPS as readonly string[]).includes(value);
 }

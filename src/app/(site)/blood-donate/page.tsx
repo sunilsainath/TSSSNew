@@ -82,7 +82,7 @@ export default function BloodDonatePage() {
               <ul className="mt-3 space-y-2 text-sm leading-relaxed text-slate-600">
                 <li>• You must be 18 or older and feeling well on the day.</li>
                 <li>• Most adults can donate every three months.</li>
-                <li>• If you do not know your blood group, most blood banks test it free before donation — but the donor roll needs a known group.</li>
+                <li>• If you do not know your blood group, choose &ldquo;I Don&rsquo;t Know&rdquo; — the trust will arrange a free test for you.</li>
               </ul>
               <ButtonLink href="/blood-help" variant="secondary" className="mt-5">
                 I need blood urgently

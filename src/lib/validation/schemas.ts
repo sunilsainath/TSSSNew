@@ -13,7 +13,6 @@ import {
   COUNTRIES,
   GENDER_OPTIONS,
   INDIAN_STATES,
-  UNKNOWN_BLOOD_GROUP,
 } from "@/lib/lookups";
 
 const trimmed = (schema: z.ZodType<string>) => z.preprocess((v) => (typeof v === "string" ? v.trim() : v), schema);
@@ -127,8 +126,8 @@ export const donorRegistrationSchema = z.object({
     z
       .string()
       .min(1, "Please select your blood group.")
-      // "I Don't Know" is offered on the member form but is useless here.
-      .refine((value) => value !== UNKNOWN_BLOOD_GROUP, "Please select a blood group.")
+      // "I Don't Know" is allowed: a willing donor is still worth recording,
+      // and the trust tests them later. The dashboard lists them for follow-up.
       .refine((value) => BLOOD_GROUP_VALUES.has(value), "Please select a valid blood group."),
   ),
   dateOfBirth: z

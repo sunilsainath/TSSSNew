@@ -253,7 +253,7 @@ Limits: **3 submissions per day** from the same device. Blank lines separate par
 | Father's Name | Yes | Same rules as your name |
 | Date of Birth | Yes | Must be a real past date, within the last 120 years |
 | Gender | Yes | Male, Female, Other, or Prefer not to say |
-| Blood Group | Yes | A+, A-, B+, B-, AB+, AB-, O+, O-, or **I Don't Know** |
+| Blood Group | Yes | A+, A-, B+, B-, AB+, AB-, O+, O-, or **I Don't Know**. Donors who choose this are listed for follow-up testing |
 | Village | Yes | 2–120 characters |
 | Country | Yes | Defaults to India. Choosing another country changes the dialling code |
 | State | Yes | Indian state, e.g. Telangana |
@@ -366,7 +366,7 @@ anywhere on the website — the reference number is your only handle, so quote i
 | Father's Name | No | |
 | Date of Birth | No | |
 | Gender | No | Defaults to "Prefer not to say" |
-| Blood Group | Yes | A+, A-, B+, B-, AB+, AB-, O+, O-. **"I Don't Know" is not offered** — a donor record without a group cannot be matched to a patient |
+| Blood Group | Yes | A+, A-, B+, B-, AB+, AB-, O+, O-, or **I Don't Know**. Donors who choose this stay on the roll and are listed for follow-up testing |
 | Last Donation Date | No | Cannot be in the future |
 | Country | Yes | Defaults to India, drives the dialling code |
 | State | No | Defaults to Telangana |

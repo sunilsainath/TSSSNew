@@ -425,12 +425,6 @@ export async function registerDonor(
         message: "You have already registered as a donor recently. Please try again tomorrow.",
       };
     }
-    if (code.includes("BLOOD_GROUP_REQUIRED")) {
-      return {
-        status: "error",
-        message: "A blood donor record needs a known blood group. If you do not know yours, most blood banks test it free before donation.",
-      };
-    }
     if (
       code.includes("INVALID_MOBILE") ||
       code.includes("INVALID_NAME") ||

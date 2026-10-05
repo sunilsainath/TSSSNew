@@ -7,10 +7,10 @@ import { INITIAL_FORM_STATE, type FormState } from "@/lib/actions/state";
 import { FieldError, FormMessage, Honeypot, SubmitButton } from "./form-controls";
 import { Input, Label, Select } from "@/components/ui/input";
 import {
+  BLOOD_GROUP_OPTIONS,
   CONTACT_PREFERENCE_OPTIONS,
   COUNTRIES,
   DEFAULT_COUNTRY_CODE,
-  DONOR_BLOOD_GROUP_OPTIONS,
   GENDER_OPTIONS,
   INDIAN_STATES,
   dialCodeFor,
@@ -108,7 +108,7 @@ export function DonorRegistrationForm() {
               <option value="" disabled>
                 Select blood group
               </option>
-              {DONOR_BLOOD_GROUP_OPTIONS.map((option) => (
+              {BLOOD_GROUP_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
