@@ -138,6 +138,8 @@ export interface BlogRow {
   updated_at: string;
 }
 
+export type Gender = "male" | "female" | "other" | "prefer_not_to_say";
+
 export interface MemberRow {
   id: string;
   registration_number: string;
@@ -150,6 +152,15 @@ export interface MemberRow {
   email: string | null;
   status: MemberStatus;
   notes: string | null;
+  /** Profile fields added by migration 0006. Nullable for earlier members. */
+  father_name: string | null;
+  gender: Gender | null;
+  blood_group: string | null;
+  state_code: string | null;
+  country_code: string | null;
+  phone_country_code: string | null;
+  profile_photo_url: string | null;
+  designation: string | null;
   created_at: string;
   updated_at: string;
 }

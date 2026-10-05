@@ -41,6 +41,7 @@ export function RegisterForm({ registrationOpen }: { registrationOpen: boolean }
           dateOfBirth: String(state.data.dateOfBirth ?? ""),
           village: String(state.data.village ?? ""),
           registeredAt: String(state.data.registeredAt ?? ""),
+          idCardToken: String(state.data.idCardToken ?? ""),
         }}
       />
     );

@@ -10,6 +10,8 @@ export type RegistrationConfirmation = {
   dateOfBirth: string;
   village: string;
   registeredAt: string;
+  /** Signed, single-use link to this member's own ID card. */
+  idCardToken?: string;
 };
 
 function formatDate(value: string) {
@@ -71,6 +73,18 @@ export function RegistrationSuccess({ data }: { data: RegistrationConfirmation }
             ))}
           </dl>
 
+          {data.idCardToken ? (
+            <a
+              href={`/api/id-card?number=${encodeURIComponent(data.registrationNumber)}&token=${encodeURIComponent(data.idCardToken)}`}
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-brand-600 to-brand-500 px-5 text-sm font-semibold text-white transition-transform hover:scale-[1.02]"
+            >
+              <svg viewBox="0 0 20 20" className="size-4" fill="currentColor" aria-hidden="true">
+                <path d="M10 2a3 3 0 0 1 3 3v5a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3Zm-6 8h1.2a4.8 4.8 0 0 0 9.6 0H16a6 6 0 0 1-5 5.9V18H9v-2.1A6 6 0 0 1 4 10Z" />
+              </svg>
+              Download your ID card
+            </a>
+          ) : null}
+
           <div className="mt-6 flex flex-wrap gap-3 print:hidden">
             <PrintButton />
             <button
@@ -87,6 +101,13 @@ export function RegistrationSuccess({ data }: { data: RegistrationConfirmation }
               Back to home
             </Link>
           </div>
+
+          {data.idCardToken ? (
+            <p className="mt-4 text-xs leading-relaxed text-slate-500 print:hidden">
+              Your ID card link works for one hour and is tied to this registration. If you lose it,
+              the trust can print a fresh copy from your registration number.
+            </p>
+          ) : null}
         </div>
       </div>
 

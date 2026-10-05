@@ -152,6 +152,8 @@ alter table public.members add column if not exists state_code text;
 alter table public.members add column if not exists country_code char(2);
 alter table public.members add column if not exists phone_country_code text;
 alter table public.members add column if not exists profile_photo_url text;
+-- Role held in the trust, printed on the ID card as "Designation".
+alter table public.members add column if not exists designation text;
 
 -- The dialling code is stored separately from the number, so a member who
 -- moves country keeps one record with two independently correct fields.
