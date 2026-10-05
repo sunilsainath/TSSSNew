@@ -61,6 +61,13 @@ export default async function AdminDashLayout({ children }: { children: React.Re
             >
               View site
             </Link>
+            <Link
+              href="/admin/password"
+              className="hidden rounded-full border border-brand-200 px-3.5 py-1.5 text-xs font-semibold text-ink-700 transition-colors hover:border-gold-400 hover:text-gold-700 md:inline-flex"
+              title="Change your password"
+            >
+              Password
+            </Link>
             <LogoutButton />
           </div>
         </div>

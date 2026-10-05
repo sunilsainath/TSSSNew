@@ -60,6 +60,7 @@ new project:
 ```bash
 npm run db:apply               # supabase/migrations/0001_init.sql (idempotent)
 npm run db:apply:visibility    # generated banner visibility column
+npm run db:apply:auth          # admin login lockout + auth audit trail
 npm run db:seed                # categories, settings, districts/areas, demo content
 ```
 
@@ -68,7 +69,7 @@ What the migration creates:
 - Tables: `users`, `site_banners`, `event_categories`, `events`, `event_gallery`,
   `donation_settings`, `media_items`, `blogs`, `members`, `districts`, `areas`,
   `blood_help_admins`, `blood_help_requests`, `notification_logs`, `page_content`,
-  `site_settings`, `audit_logs`, `form_rate_limits`
+  `site_settings`, `audit_logs`, `form_rate_limits`, `admin_login_attempts`
 - Enums for roles, blog status, request status, notification status, banner type
 - Sequences `member_registration_seq` and `blood_request_seq` → `TSSS000001`, `BH000001`
 - `SECURITY DEFINER` RPCs: `submit_registration`, `submit_blog`, `create_blood_request`,
@@ -222,11 +223,19 @@ nothing is hard-coded in the app.
 - Server-side validation with zod **and** database constraints/unique indexes.
 - Rate limiting per source (in-memory + database) and a honeypot field on public
   forms; optional Cloudflare Turnstile support.
+- Admin sign-in is throttled in the **database**, not in the Node process, so the
+  lockout survives ephemeral serverless instances. Ten failures in 15 minutes blocks
+  both the source address and the target account; a successful sign-in clears both.
+- Self-service password reset and change at `/admin/forgot-password` and
+  `/admin/password`. Requires Supabase's redirect allow-list to include
+  `NEXT_PUBLIC_SITE_URL`.
 - Image uploads restricted to JPG/PNG/WebP/AVIF under 4 MB.
 - Blog content sanitised with an allow-list (`src/lib/utils/sanitize.ts`) before
   storage; React escapes everything else on render.
 - Security headers, `noindex` on admin routes, and audit logging of administrative
-  actions (create/update/delete/publish/approve/enable/disable).
+  actions (create/update/delete/publish/approve/enable/disable) **and** authentication
+  events (`sign_in`, `sign_in_failed`, `sign_out`, `access_denied`,
+  `password_reset_requested`, `password_changed`) under the `admin_auth` entity.
 - The service-role key is only used in server-only modules.
 
 ---
@@ -321,6 +330,9 @@ npm run test:admin-actions -- email password      # 22 checks: banner, events, g
                                                    # blog approval, member disable, audit
 npm run test:notifications -- email password      # 5 checks: email + WhatsApp providers
 npm run test:photobooth                           # 10 checks: photo compositing maths
+node scripts/auth-flow-check.mjs                  # 13 checks: admin guard, reset pages,
+                                                   # recovery code handling
+node scripts/login-lockout-check.mjs email pass   # 9 checks: durable sign-in lockout
 ```
 
 Helpers:
@@ -329,6 +341,13 @@ Helpers:
 npm run db:reset-rate-limits   # public forms are rate limited (8/hour, 5/hour, 3/day per source)
 npm run db:reset-sequences     # clears dev members/requests and restarts TSSS/BH numbering
 npm run db:apply               # re-apply migrations (needs direct Postgres access)
+```
+
+Clearing an administrator lockout without waiting 15 minutes:
+
+```sql
+select public.clear_rate_limit('admin-login:ip:<address>');
+select public.clear_login_failures('admin-login:account:<email>');
 ```
 
 > Direct Postgres (`npm run db:*`) needs DNS/network access to
@@ -367,7 +386,7 @@ src/
   lib/
     actions/           server actions (public forms, admin CRUD, auth)
     admin/entities.ts  declarative field definitions for every admin entity
-    auth/              session + role helpers
+    auth/              session + role helpers, sign-in lockout
     data/              data access layer (public + registrations)
     notifications/     email/WhatsApp providers, templates, dispatcher
     security/          rate limiting, honeypot, Turnstile
@@ -375,7 +394,8 @@ src/
     validation/        zod schemas
 supabase/
   migrations/0001_init.sql, 0002_banner_visibility.sql,
-            0003_admin_grants.sql, 0004_photo_booth.sql
+            0003_admin_grants.sql, 0004_photo_booth.sql,
+            0005_admin_auth_hardening.sql
   seed.sql, photo-booth-seed.sql, remove-demo-content.sql, reset-sequences.sql
 scripts/               SQL helpers, frame/placeholder generators, smoke tests, dev helpers
 ```

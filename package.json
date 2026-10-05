@@ -12,6 +12,8 @@
     "db:apply:visibility": "node scripts/db-apply.mjs supabase/migrations/0002_banner_visibility.sql",
     "db:apply:grants": "node scripts/db-apply.mjs supabase/migrations/0003_admin_grants.sql",
     "db:apply:photobooth": "node scripts/db-apply.mjs supabase/migrations/0004_photo_booth.sql",
+    "db:apply:auth": "node scripts/db-apply.mjs supabase/migrations/0005_admin_auth_hardening.sql",
+    "db:apply:profiles": "node scripts/db-apply.mjs supabase/migrations/0006_profiles_and_blood_donation.sql",
     "db:seed": "node scripts/db-apply.mjs supabase/seed.sql",
     "db:remove-demo": "node scripts/db-apply.mjs supabase/remove-demo-content.sql",
     "db:reset-sequences": "node scripts/db-apply.mjs supabase/reset-sequences.sql",

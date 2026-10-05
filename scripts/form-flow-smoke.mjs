@@ -25,6 +25,10 @@ const env = Object.fromEntries(
 const BASE = process.env.BASE_URL ?? "http://localhost:3000";
 const stamp = Date.now();
 
+// Documentation range (RFC 5737), varied per run so each run looks like a
+// different visitor device to the per-IP rate limiters.
+const clientIp = `198.51.${100 + (stamp % 100)}.${1 + (Math.floor(stamp / 1000) % 250)}`;
+
 let passed = 0;
 let failed = 0;
 const check = (name, ok, detail = "") => {
@@ -85,6 +89,18 @@ async function submit(url, form, hidden, values) {
     method: "POST",
     body,
     redirect: "manual",
+    // Next.js 16 ignores a Server Action POST that arrives without an Origin
+    // matching the host, returning the page unchanged with no error. A real
+    // browser always sends these, so the harness must too.
+    //
+    // A unique source address per run keeps the public-form rate limiters from
+    // making this suite un-repeatable: they count per IP, and re-running against
+    // one address exhausts them.
+    headers: {
+      origin: new URL(BASE).origin,
+      host: new URL(BASE).host,
+      "x-forwarded-for": clientIp,
+    },
   });
   const text = await response.text();
   return { status: response.status, location: response.headers.get("location"), text };
@@ -99,13 +115,30 @@ async function run() {
   console.log("\n1. Registration form (no-JavaScript submission)");
   const registerHtml = await (await fetch(`${BASE}/register`)).text();
   const registerForm = readForm(registerHtml);
-  check("registration form exposes the required fields", ["fullName", "dateOfBirth", "village", "mobileNumber"].every((name) => registerForm.fields.includes(name)), registerForm.fields.join(","));
+  check(
+    "registration form exposes the required fields",
+    ["fullName", "fatherName", "dateOfBirth", "gender", "bloodGroup", "countryCode", "stateCode", "village", "mobileNumber"].every(
+      (name) => registerForm.fields.includes(name),
+    ),
+    registerForm.fields.join(","),
+  );
 
   const name = `FormFlowPerson${stamp}`;
-const bloodRequester = `Form Flow Patient${stamp}`;
+  const bloodRequester = `Form Flow Patient${stamp}`;
+
+  // The new mandatory profile fields, mirroring what a visitor must supply.
+  const profile = {
+    fatherName: "FormFlowFather",
+    gender: "male",
+    bloodGroup: "O+",
+    countryCode: "IN",
+    stateCode: "TS",
+  };
+
   const registration = await submit("/register", registerForm.form, registerForm.hidden, {
     fullName: name,
     dateOfBirth: "1988-04-12",
+    ...profile,
     village: "Sriramapuram",
     mobileNumber: `98765${String(stamp % 100000).padStart(5, "0")}`,
     email: "",
@@ -121,16 +154,23 @@ const bloodRequester = `Form Flow Patient${stamp}`;
 
   const { data: created } = await admin
     .from("members")
-    .select("registration_number")
+    .select("registration_number, father_name, gender, blood_group, state_code, country_code, phone_country_code")
     .eq("full_name", name)
     .maybeSingle();
   check("member row created in the database", Boolean(created), JSON.stringify(created ?? {}));
   check("registration number assigned", /^TSSS\d{6}$/.test(created?.registration_number ?? ""), created?.registration_number ?? "");
+  check("father's name stored", created?.father_name === profile.fatherName, created?.father_name ?? "");
+  check("gender stored", created?.gender === profile.gender, created?.gender ?? "");
+  check("blood group stored", created?.blood_group === profile.bloodGroup, created?.blood_group ?? "");
+  check("state stored", created?.state_code === profile.stateCode, created?.state_code ?? "");
+  check("country defaults to India", created?.country_code === "IN", created?.country_code ?? "");
+  check("dialling code resolved from the country", created?.phone_country_code === "91", created?.phone_country_code ?? "");
 
   console.log("\n2. Duplicate submission");
   const duplicate = await submit("/register", registerForm.form, registerForm.hidden, {
     fullName: name.toUpperCase(),
     dateOfBirth: "1988-04-12",
+    ...profile,
     village: "Sriramapuram",
     mobileNumber: "9876500000",
     email: "",

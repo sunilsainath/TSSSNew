@@ -95,6 +95,12 @@ const UPLOAD_FOLDERS: Partial<Record<EntityKey, string>> = {
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/avif"];
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 
+/**
+ * Placeholder that stands in for an image field during validation, before the
+ * file has actually been uploaded. Replaced by the stored URL afterwards.
+ */
+const PENDING_UPLOAD = "__pending_upload__";
+
 async function handleImageUploads(
   entity: EntityKey,
   fields: FieldSpec[],
@@ -220,8 +226,6 @@ export async function adminSaveAction(
       return await createUserAccount(formData);
     }
 
-    const uploads = await handleImageUploads(entity, spec.fields, formData);
-
     const raw: Record<string, unknown> = {};
     for (const field of spec.fields) {
       if (field.type === "checkbox") {
@@ -229,6 +233,22 @@ export async function adminSaveAction(
         continue;
       }
       raw[field.name] = formData.get(field.name) ?? "";
+    }
+
+    // An image field submits its current value in a hidden input and the new
+    // file separately. On create the hidden value is empty, so a *required*
+    // image field would fail validation even though a perfectly good file was
+    // chosen. Mark it as satisfied here; the real upload happens after
+    // validation so a rejected form never leaves an orphaned file in storage.
+    const pendingFiles = new Set<string>();
+    for (const field of spec.fields) {
+      if (field.type !== "image") continue;
+
+      const file = formData.get(`${field.name}File`);
+      if (file instanceof File && file.size > 0 && !String(raw[field.name] ?? "").trim()) {
+        raw[field.name] = PENDING_UPLOAD;
+        pendingFiles.add(field.name);
+      }
     }
 
     const validator = buildValidator(entity, spec.fields);
@@ -240,6 +260,18 @@ export async function adminSaveAction(
         if (!errors[key]) errors[key] = issue.message;
       }
       return { status: "error", message: "Please correct the highlighted fields.", errors };
+    }
+
+    const uploads = await handleImageUploads(entity, spec.fields, formData);
+
+    // A placeholder that survived to here means the upload produced nothing.
+    for (const name of pendingFiles) {
+      if (!uploads[name]) {
+        return {
+          status: "error",
+          message: `The ${spec.fields.find((field) => field.name === name)?.label ?? "image"} could not be uploaded.`,
+        };
+      }
     }
 
     const values = { ...parsed.data, ...uploads };
@@ -356,6 +388,10 @@ export async function adminSaveAction(
       : /row-level security|permission denied/i.test(message)
         ? "You do not have permission to do that."
         : message;
+
+    // Logged so an administrator (or a developer reading server output) can see
+    // why a save failed instead of only seeing a generic message in the browser.
+    console.error(`[admin] ${spec.auditEntity} save failed:`, message);
 
     return { status: "error", message: intent === "save" ? friendly : "Something went wrong." };
   }

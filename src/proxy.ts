@@ -19,7 +19,25 @@ type CookieToSet = { name: string; value: string; options?: CookieOptions };
 
 const PROTECTED_PREFIXES = ["/admin"];
 
+/**
+ * Reachable without a session.
+ *
+ * - `/admin/login` obviously.
+ * - `/admin/forgot-password` is the reset request form.
+ * - `/admin/password` is where Supabase's recovery link lands. Following it
+ *   creates a short-lived recovery session, but an administrator who has merely
+ *   forgotten their password arrives with no session at all and must still be
+ *   able to set a new one.
+ */
+const PUBLIC_ADMIN_PATHS = new Set([
+  "/admin/login",
+  "/admin/forgot-password",
+  "/admin/password",
+]);
+
 function isProtected(pathname: string) {
+  if (PUBLIC_ADMIN_PATHS.has(pathname)) return false;
+
   return PROTECTED_PREFIXES.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
   );
@@ -58,7 +76,19 @@ export async function proxy(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
-  if (isProtected(pathname) && pathname !== "/admin/login") {
+  // Password recovery link. Supabase emails a PKCE `?code=` which has to be
+  // exchanged for a session. This happens here rather than in the page because
+  // only this layer may write cookies; a Server Component cannot.
+  const code = request.nextUrl.searchParams.get("code");
+  if (code && !user && pathname === "/admin/password") {
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+    const cleanUrl = request.nextUrl.clone();
+    cleanUrl.search = "";
+    return NextResponse.redirect(cleanUrl, error ? 303 : 307);
+  }
+
+  if (isProtected(pathname)) {
     if (!user) {
       const loginUrl = request.nextUrl.clone();
       loginUrl.pathname = "/admin/login";

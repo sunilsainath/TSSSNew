@@ -64,6 +64,11 @@ export async function registerMember(
 
   const parsed = registrationSchema.safeParse({
     fullName: formData.get("fullName"),
+    fatherName: formData.get("fatherName"),
+    gender: formData.get("gender"),
+    bloodGroup: formData.get("bloodGroup"),
+    countryCode: formData.get("countryCode"),
+    stateCode: formData.get("stateCode"),
     dateOfBirth: formData.get("dateOfBirth"),
     village: formData.get("village"),
     mobileNumber: formData.get("mobileNumber"),
@@ -79,13 +84,33 @@ export async function registerMember(
   }
 
   const input: RegistrationInput = parsed.data;
+
+  // The profile photo is optional. A failed upload is reported but never blocks
+  // an otherwise valid registration, since the number is issued either way.
+  let profilePhotoUrl = "";
+  const photo = formData.get("profilePhoto");
+  if (photo instanceof File && photo.size > 0) {
+    const uploaded = await uploadPublicImage(photo, "profile-photos");
+    if (!uploaded.ok) {
+      return { status: "error", message: uploaded.error, errors: { profilePhoto: uploaded.error } };
+    }
+    profilePhotoUrl = uploaded.url;
+  }
+
   const supabase = await createClient();
 
-  const { data, error } = await supabase.rpc("submit_registration", {
+  const { data, error } = await supabase.rpc("submit_registration_v2", {
     p_full_name: input.fullName,
     p_date_of_birth: input.dateOfBirth,
+    p_father_name: input.fatherName,
+    p_gender: input.gender,
+    p_blood_group: input.bloodGroup,
+    p_state_code: input.stateCode,
+    p_country_code: input.countryCode.toUpperCase(),
     p_village: input.village,
     p_mobile_number: input.mobileNumber,
+    p_phone_country_code: null,
+    p_profile_photo_url: profilePhotoUrl || null,
     p_email: input.email || null,
     p_rate_key: identifier,
   });
@@ -105,10 +130,20 @@ export async function registerMember(
         message: "Too many attempts from this device. Please try again later.",
       };
     }
-    if (code.includes("INVALID_MOBILE") || code.includes("INVALID_DOB") || code.includes("INVALID_NAME") || code.includes("INVALID_VILLAGE")) {
+    if (
+      code.includes("INVALID_MOBILE") ||
+      code.includes("INVALID_DOB") ||
+      code.includes("INVALID_NAME") ||
+      code.includes("INVALID_VILLAGE") ||
+      code.includes("INVALID_FATHER_NAME") ||
+      code.includes("INVALID_BLOOD_GROUP") ||
+      code.includes("INVALID_GENDER") ||
+      code.includes("INVALID_COUNTRY") ||
+      code.includes("INVALID_STATE")
+    ) {
       return { status: "error", message: "Please check your details and try again." };
     }
-    console.error("submit_registration failed:", error.message);
+    console.error("submit_registration_v2 failed:", error.message);
     return {
       status: "error",
       message: "We could not complete your registration right now. Please try again in a moment.",

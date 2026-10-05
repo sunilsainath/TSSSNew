@@ -31,7 +31,12 @@ export const FEATURE_NAV: NavItem[] = [{ href: "/photo-booth", label: "Photo Boo
 /** Registration is called out separately as the main call to action. */
 export const REGISTER_NAV: NavItem = { href: "/register", label: "Register" };
 
-export const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as const;
+/**
+ * Blood groups and the other domain lookups now live in `@/lib/lookups`, which
+ * is verified against the database by `scripts/lookup-consistency.mjs`.
+ * Re-exported here so existing imports keep working from a single source.
+ */
+export { BLOOD_GROUPS } from "@/lib/lookups";
 
 export const BLOG_CATEGORIES = [
   "General",
@@ -75,7 +80,7 @@ export const CONTACT_FORM_EMAIL =
 export const CONTACT_FORM_ENDPOINT = `https://formsubmit.co/ajax/${CONTACT_FORM_EMAIL}`;
 
 /** Where FormSubmit sends the visitor after a successful send. */
-export const CONTACT_FORM_REDIRECT = `${SITE_URL}/contact?sent=1`;
+export const CONTACT_FORM_REDIRECT = `${SITE_URL}/about#contact`;
 
 export const FALLBACK_SETTINGS: SiteSettingsRow = {
   id: "fallback",

@@ -29,3 +29,11 @@ export type LoginState = {
 };
 
 export const INITIAL_LOGIN_STATE: LoginState = { status: "idle" };
+
+/** Password reset request and password change share one shape. */
+export type PasswordState = {
+  status: "idle" | "success" | "error";
+  message?: string;
+};
+
+export const INITIAL_PASSWORD_STATE: PasswordState = { status: "idle" };

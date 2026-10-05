@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 
@@ -48,6 +49,12 @@ export function LoginForm({ nextPath }: { nextPath?: string }) {
       </div>
 
       <LoginButton />
+
+      <p className="text-center text-xs text-white/50">
+        <Link href="/admin/forgot-password" className="underline underline-offset-2">
+          Forgot your password?
+        </Link>
+      </p>
     </form>
   );
 }
